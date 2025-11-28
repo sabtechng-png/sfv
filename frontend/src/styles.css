@@ -1,0 +1,10 @@
+.app-container {
+  text-align: center;
+  margin-top: 3rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1 {
+  color: #0066cc;
+  font-weight: 600;
+}

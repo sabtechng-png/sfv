@@ -1,0 +1,37 @@
+git add backend/server.js
+git add backend/routes/authRoutes.js
+git add frontend/src/state/AppContext.js
+git add frontend/src/pages/Login.jsx
+
+
+
+git commit -m "Update "
+
+git push origin main
+git push origin main --force
+
+
+git add backend/middleware/shopMiddleware.js
+
+git add backend/routes/grandAuthRoutes.js
+
+git add grand-admin-frontend/src/pages/GrandAdminLogin.jsx
+git add grand-admin-frontend/src/pages/GrandAdminLogin.css
+
+git add frontend/src/components/ProtectedRoute.js
+
+
+https://grand-admin-frontend.onrender.com/
+
+git add frontend/src/App.js
+git add frontend/src/components/ProtectedRoute.jsx
+git add frontend/src/components/RequireGrandAuth.jsx
+git add frontend/src/pages/grand/GrandAdminLogin.jsx
+git add frontend/src/pages/grand/GrandAdminDashboard.jsx
+git add backend/routes/grandAuthRoutes.js
+git add backend/server.js
+
+git add frontend/src/pages/grand/GrandAdminDashboard.jsx
+git add frontend/src/pages/grand/GrandAdminDashboard.css
+
+git add backend/package.json
