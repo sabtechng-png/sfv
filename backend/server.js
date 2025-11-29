@@ -39,7 +39,7 @@ const witnessRoutes = require("./routes/witnessRoutes");   //Witnesses
 const expenseRoutes = require("./routes/expenseRoutes");  // expenses 
 const balanceRoutes = require("./routes/balanceRoutes");
 const expenseLogsRoutes = require("./routes/expenseLogsRoutes");
-
+const adminUserRoutes = require("./routes/adminUserRoutes");
 
 
 
@@ -91,6 +91,8 @@ app.use("/api/audit-access", auditAccessRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/jobs", issuesRoutes);
 app.use("/api/dashboard", jobdashboardRoutes);
+
+app.use("/api/admin-users", adminUserRoutes);
 
 app.use("/api/users", userRoutes);
 app.use("/api/quotation-settings", quotationSettingsRoutes);

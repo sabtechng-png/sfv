@@ -1,21 +1,28 @@
-// src/pages/admin/UserManagementPage.jsx
-// SFV Tech — Admin-Only User Management (FULL TOKEN PATCH)
+// =============================================================
+// SFV Tech — ADMIN USER MANAGEMENT PAGE (Dedicated Admin Route)
+// Uses backend route: /api/admin-users
+// ESLint-compliant: No conditional hooks
+// =============================================================
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box, Paper, Grid, TextField, Button, IconButton, Chip,
-  Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions,
-  Typography, Tooltip, Divider, Snackbar, Alert, FormControl, InputLabel, Select
+  Menu, MenuItem, Dialog, DialogTitle, DialogContent,
+  DialogActions, Typography, Snackbar, Alert,
+  FormControl, InputLabel, Select, Divider
 } from "@mui/material";
+
 import { DataGrid } from "@mui/x-data-grid";
-import SearchIcon from "@mui/icons-material/Search";
+
 import AddIcon from "@mui/icons-material/Add";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LockResetIcon from "@mui/icons-material/LockReset";
-import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import SearchIcon from "@mui/icons-material/Search";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
@@ -29,36 +36,31 @@ const ROLE_COLORS = {
   apprentice: { bg: "#ef6c00", fg: "#fff" },
   staff: { bg: "#00897b", fg: "#fff" },
 };
+
 const roleList = ["admin", "engineer", "storekeeper", "apprentice", "staff"];
 
-function toCSV(rows) {
-  const headers = ["id", "name", "email", "role", "nickname", "last_login", "created_at", "updated_at"];
-  const lines = [headers.join(",")];
-  for (const r of rows) {
-    const vals = [
-      r.id, r.name ?? "", r.email ?? "", r.role ?? "", r.nickname ?? "",
-      r.last_login ?? "", r.created_at ?? "", r.updated_at ?? "",
-    ];
-    lines.push(vals.join(","));
-  }
-  return lines.join("\n");
-}
-
 export default function UserManagementPage() {
-  // ⭐ IMPORTANT FIX — get JWT token
+  // ============================
+  //  AUTH
+  // ============================
   const { user, token } = useAuth();
-  const role = (user?.role || "").toLowerCase();
-  const isAdmin = role === "admin";
+  const isAdmin = user?.role === "admin";
 
-  // State
+  // ============================
+  //  STATE (Hooks must come FIRST)
+  // ============================
   const [rows, setRows] = useState([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [totalRows, setTotalRows] = useState(0);
+
   const [q, setQ] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
 
+  const [loading, setLoading] = useState(false);
+
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
+
   const [openForm, setOpenForm] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
@@ -69,72 +71,69 @@ export default function UserManagementPage() {
   const [fRole, setFRole] = useState("engineer");
   const [fNickname, setFNickname] = useState("");
   const [fPassword, setFPassword] = useState("");
-
   const [resetPassword, setResetPassword] = useState("");
+
   const [toast, setToast] = useState({ open: false, msg: "", sev: "success" });
 
-  const pending = useRef(false);
-
-  // Build query params
-  const buildParams = useCallback(() => {
-    const params = new URLSearchParams();
-    params.set("page", page);
-    params.set("limit", PAGE_SIZE);
-    if (q.trim()) params.set("q", q.trim());
-    if (roleFilter) params.set("role", roleFilter);
-    return params.toString();
-  }, [page, q, roleFilter]);
-
-  // ⭐ FIXED: All fetch calls now include Authorization header
+  // ============================
+  //  FETCH USERS
+  // ============================
   const fetchUsers = useCallback(async () => {
-    if (!isAdmin) return;
     setLoading(true);
 
     try {
-      const qs = buildParams();
-      const res = await fetch(`${API_BASE}/api/users?${qs}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const params = new URLSearchParams();
+      params.set("page", page + 1); // backend is 1-based
+      params.set("limit", PAGE_SIZE);
+
+      if (q.trim()) params.set("q", q.trim());
+      if (roleFilter) params.set("role", roleFilter);
+
+      const res = await fetch(`${API_BASE}/api/admin-users?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
-      setRows((data.users || []).map(u => ({ id: u.id, ...u })));
-    } catch (e) {
-      setToast({ open: true, msg: e.message, sev: "error" });
+      setRows(data.users || []);
+      setTotalRows(data.total || 0);
+    } catch (err) {
+      setToast({ open: true, msg: err.message, sev: "error" });
     } finally {
       setLoading(false);
     }
-  }, [buildParams, isAdmin, token]);
+  }, [page, q, roleFilter, token]);
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
-  useEffect(() => { fetchUsers(); }, [page]);
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
-  if (!isAdmin) return <Navigate to="/login" replace />;
-
+  // ============================
+  //  FORM HANDLING
+  // ============================
   const openCreate = () => {
     setEditMode(false);
-    setFName(""); setFEmail(""); setFRole("engineer"); setFNickname(""); setFPassword("");
+    setFName("");
+    setFEmail("");
+    setFRole("engineer");
+    setFNickname("");
+    setFPassword("");
     setOpenForm(true);
   };
 
-  const openEdit = () => {
+  const openEditUser = () => {
     setEditMode(true);
-    setFName(selectedRow?.name || "");
-    setFEmail(selectedRow?.email || "");
-    setFRole(selectedRow?.role || "engineer");
+    setFName(selectedRow?.name);
+    setFEmail(selectedRow?.email);
+    setFRole(selectedRow?.role);
     setFNickname(selectedRow?.nickname || "");
+    setFPassword("");
     setOpenForm(true);
     setMenuAnchor(null);
   };
 
-  // ⭐ FIXED: submitForm includes token
   const submitForm = async () => {
-    if (!isAdmin) return;
-    pending.current = true;
-
     try {
       const body = {
         name: fName,
@@ -142,10 +141,16 @@ export default function UserManagementPage() {
         role: fRole,
         nickname: fNickname,
       };
-      if (fPassword) body.password = fPassword;
 
-      const res = await fetch(`${API_BASE}/api/users${editMode ? `/${selectedRow.id}` : ""}`, {
-        method: editMode ? "PATCH" : "POST",
+      if (fPassword.trim().length > 0) {
+        body.password = fPassword;
+      }
+
+      const url = `${API_BASE}/api/admin-users${editMode ? `/${selectedRow.id}` : ""}`;
+      const method = editMode ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -156,42 +161,47 @@ export default function UserManagementPage() {
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
-      setOpenForm(false);
       setToast({ open: true, msg: editMode ? "User updated" : "User created", sev: "success" });
+      setOpenForm(false);
       fetchUsers();
-    } catch (e) {
-      setToast({ open: true, msg: e.message, sev: "error" });
-    } finally {
-      pending.current = false;
+    } catch (err) {
+      setToast({ open: true, msg: err.message, sev: "error" });
     }
   };
 
-  // ⭐ FIXED reset password
+  // ============================
+  // RESET PASSWORD
+  // ============================
   const doResetPwd = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/users/${selectedRow.id}/reset-password`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ password: resetPassword }),
-      });
+      const res = await fetch(
+        `${API_BASE}/api/admin-users/${selectedRow.id}/reset-password`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ password: resetPassword }),
+        }
+      );
 
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
-      setOpenReset(false);
       setToast({ open: true, msg: "Password reset", sev: "success" });
-    } catch (e) {
-      setToast({ open: true, msg: e.message, sev: "error" });
+      setOpenReset(false);
+    } catch (err) {
+      setToast({ open: true, msg: err.message, sev: "error" });
     }
   };
 
-  // ⭐ FIXED delete user
+  // ============================
+  // DELETE USER
+  // ============================
   const doDelete = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/users/${selectedRow.id}`, {
+      const res = await fetch(`${API_BASE}/api/admin-users/${selectedRow.id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -199,153 +209,329 @@ export default function UserManagementPage() {
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
+      setToast({ open: true, msg: "User deleted", sev: "success" });
       setOpenDelete(false);
       fetchUsers();
-      setToast({ open: true, msg: "User deleted", sev: "success" });
-    } catch (e) {
-      setToast({ open: true, msg: e.message, sev: "error" });
+    } catch (err) {
+      setToast({ open: true, msg: err.message, sev: "error" });
     }
   };
 
-  // ⭐ FIXED CSV export
+  // ============================
+  // EXPORT CSV
+  // ============================
   const exportCSV = async () => {
-    const qs = buildParams();
-    const res = await fetch(`${API_BASE}/api/users?${qs}`, {
+    const params = new URLSearchParams();
+    params.set("page", 1);
+    params.set("limit", totalRows);
+
+    const res = await fetch(`${API_BASE}/api/admin-users?${params}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+
     const data = await res.json();
     if (!data.success) return;
 
-    const csv = toCSV(data.users);
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
+    const csvHeader = "id,name,email,role,nickname,last_login,created_at,updated_at\n";
+    const csvRows = data.users
+      .map(u => [
+        u.id,
+        u.name,
+        u.email,
+        u.role,
+        u.nickname,
+        u.last_login,
+        u.created_at,
+        u.updated_at
+      ].join(","));
+
+    const blob = new Blob([csvHeader + csvRows.join("\n")], {
+      type: "text/csv",
+    });
+
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `users.csv`;
+    a.href = URL.createObjectURL(blob);
+    a.download = "users.csv";
     a.click();
-    URL.revokeObjectURL(url);
   };
 
+  // ============================
+  // ROLE CHIP
+  // ============================
   const RoleChip = ({ value }) => {
-    const v = String(value || "").toLowerCase();
-    const c = ROLE_COLORS[v] || { bg: "#607d8b", fg: "#fff" };
-    return <Chip label={v.toUpperCase()} size="small" sx={{ bgcolor: c.bg, color: c.fg }} />;
+    const v = (value || "").toLowerCase();
+    const c = ROLE_COLORS[v] || { bg: "#455a64", fg: "#fff" };
+    return (
+      <Chip label={v.toUpperCase()} size="small" sx={{ bgcolor: c.bg, color: c.fg }} />
+    );
   };
 
+  // ============================
+  // TABLE COLUMNS
+  // ============================
   const columns = [
     { field: "name", headerName: "Name", flex: 1.4 },
     { field: "email", headerName: "Email", flex: 1.6 },
-    { field: "role", headerName: "Role", flex: 1, renderCell: p => <RoleChip value={p.value} /> },
+    {
+      field: "role",
+      headerName: "Role",
+      flex: 1,
+      renderCell: p => <RoleChip value={p.value} />,
+    },
     { field: "nickname", headerName: "Nickname", flex: 1 },
-    { field: "last_login", headerName: "Last Login", flex: 1 },
-    { field: "created_at", headerName: "Created At", flex: 1 },
+    { field: "created_at", headerName: "Created", flex: 1 },
     {
       field: "actions",
       headerName: "Actions",
       width: 70,
-      renderCell: (params) => (
-        <IconButton onClick={(e) => { e.stopPropagation(); setSelectedRow(params.row); setMenuAnchor(e.currentTarget); }}>
+      renderCell: params => (
+        <IconButton
+          onClick={e => {
+            e.stopPropagation();
+            setSelectedRow(params.row);
+            setMenuAnchor(e.currentTarget);
+          }}
+        >
           <MoreVertIcon />
         </IconButton>
       ),
     },
   ];
 
+  // ============================
+  // CONDITIONAL UI (AFTER HOOKS)
+  // ============================
+  if (!isAdmin) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // ============================
+  // RENDER
+  // ============================
   return (
     <Box p={3}>
+
+      {/* HEADER */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5" fontWeight={800}>User Management (Admin Only)</Typography>
+        <Typography variant="h5" fontWeight={800}>User Management</Typography>
+
         <Box display="flex" gap={1}>
-          <IconButton onClick={() => fetchUsers()}><RefreshIcon /></IconButton>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>Add User</Button>
+          <IconButton onClick={fetchUsers}>
+            <RefreshIcon />
+          </IconButton>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+            Add User
+          </Button>
         </Box>
       </Box>
 
+      {/* FILTERS */}
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Search"
+              fullWidth
+              value={q}
+              onChange={e => {
+                setQ(e.target.value);
+                setPage(0);
+              }}
+              InputProps={{
+                startAdornment: <SearchIcon sx={{ mr: 1 }} />,
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
+              <InputLabel>Filter by Role</InputLabel>
+              <Select
+                value={roleFilter}
+                label="Filter by Role"
+                onChange={e => {
+                  setRoleFilter(e.target.value);
+                  setPage(0);
+                }}
+              >
+                <MenuItem value="">All Roles</MenuItem>
+                {roleList.map(r => (
+                  <MenuItem key={r} value={r}>
+                    {r.toUpperCase()}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* TABLE */}
       <Paper sx={{ p: 1 }}>
         <DataGrid
           rows={rows}
           columns={columns}
           loading={loading}
+          rowCount={totalRows}
+          paginationMode="server"
           pageSizeOptions={[PAGE_SIZE]}
-          paginationModel={{ pageSize: PAGE_SIZE, page: page - 1 }}
-          onPaginationModelChange={m => setPage(m.page + 1)}
+          paginationModel={{ page, pageSize: PAGE_SIZE }}
+          onPaginationModelChange={m => setPage(m.page)}
           sx={{ height: 600 }}
         />
+
         <Divider sx={{ my: 1 }} />
-        <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+
+        <Box display="flex" justifyContent="flex-end">
           <Button variant="outlined" startIcon={<FileDownloadIcon />} onClick={exportCSV}>
             Export CSV
           </Button>
         </Box>
       </Paper>
 
-      {/* --- ACTION MENU --- */}
-      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
-        <MenuItem onClick={openEdit}><EditIcon sx={{ mr: 1 }} /> Edit User</MenuItem>
-        <MenuItem onClick={() => setOpenReset(true)}><LockResetIcon sx={{ mr: 1 }} /> Reset Password</MenuItem>
-        <MenuItem onClick={() => setOpenDelete(true)} sx={{ color: "red" }}>
+      {/* ACTION MENU */}
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={() => setMenuAnchor(null)}
+      >
+        <MenuItem onClick={openEditUser}>
+          <EditIcon sx={{ mr: 1 }} /> Edit User
+        </MenuItem>
+
+        <MenuItem onClick={() => setOpenReset(true)}>
+          <LockResetIcon sx={{ mr: 1 }} /> Reset Password
+        </MenuItem>
+
+        <MenuItem sx={{ color: "red" }} onClick={() => setOpenDelete(true)}>
           <DeleteIcon sx={{ mr: 1 }} /> Delete User
         </MenuItem>
       </Menu>
 
-      {/* --- EDIT DIALOG --- */}
+      {/* ADD / EDIT USER */}
       <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{editMode ? "Edit User" : "Add User"}</DialogTitle>
+
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
-              <TextField label="Name" fullWidth value={fName} onChange={e => setFName(e.target.value)} />
+              <TextField
+                fullWidth
+                label="Name"
+                value={fName}
+                onChange={e => setFName(e.target.value)}
+              />
             </Grid>
+
             <Grid item xs={12} md={6}>
-              <TextField label="Email" fullWidth value={fEmail} onChange={e => setFEmail(e.target.value)} />
+              <TextField
+                fullWidth
+                label="Email"
+                value={fEmail}
+                onChange={e => setFEmail(e.target.value)}
+              />
             </Grid>
+
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Role</InputLabel>
-                <Select value={fRole} label="Role" onChange={e => setFRole(e.target.value)}>
-                  {roleList.map(r => <MenuItem key={r} value={r}>{r.toUpperCase()}</MenuItem>)}
+                <Select
+                  value={fRole}
+                  label="Role"
+                  onChange={e => setFRole(e.target.value)}
+                >
+                  {roleList.map(r => (
+                    <MenuItem key={r} value={r}>
+                      {r.toUpperCase()}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
+
             <Grid item xs={12} md={6}>
-              <TextField label="Nickname" fullWidth value={fNickname} onChange={e => setFNickname(e.target.value)} />
+              <TextField
+                fullWidth
+                label="Nickname"
+                value={fNickname}
+                onChange={e => setFNickname(e.target.value)}
+              />
             </Grid>
+
             <Grid item xs={12}>
-              <TextField label="Password (optional)" type="password" fullWidth value={fPassword} onChange={e => setFPassword(e.target.value)} />
+              <TextField
+                fullWidth
+                label="Password (optional)"
+                type="password"
+                value={fPassword}
+                onChange={e => setFPassword(e.target.value)}
+              />
             </Grid>
           </Grid>
         </DialogContent>
+
         <DialogActions>
           <Button onClick={() => setOpenForm(false)}>Cancel</Button>
-          <Button variant="contained" onClick={submitForm}>Save</Button>
+          <Button variant="contained" onClick={submitForm}>
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* RESET PASSWORD */}
       <Dialog open={openReset} onClose={() => setOpenReset(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Reset Password</DialogTitle>
+
         <DialogContent>
-          <TextField fullWidth label="New Password" type="password" value={resetPassword} onChange={e => setResetPassword(e.target.value)} />
+          <TextField
+            fullWidth
+            type="password"
+            label="New Password"
+            value={resetPassword}
+            onChange={e => setResetPassword(e.target.value)}
+          />
         </DialogContent>
+
         <DialogActions>
           <Button onClick={() => setOpenReset(false)}>Cancel</Button>
-          <Button variant="contained" onClick={doResetPwd}>Reset</Button>
+          <Button variant="contained" onClick={doResetPwd}>
+            Reset
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* DELETE CONFIRM */}
       <Dialog open={openDelete} onClose={() => setOpenDelete(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ color: "error.main" }}>Delete User?</DialogTitle>
-        <DialogContent><Typography>This cannot be undone.</Typography></DialogContent>
+        <DialogTitle sx={{ color: "error.main" }}>
+          Delete User?
+        </DialogTitle>
+
+        <DialogContent>
+          <Typography>This action cannot be undone.</Typography>
+        </DialogContent>
+
         <DialogActions>
           <Button onClick={() => setOpenDelete(false)}>Cancel</Button>
-          <Button color="error" variant="contained" onClick={doDelete}>Delete</Button>
+          <Button variant="contained" color="error" onClick={doDelete}>
+            Delete
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* TOAST */}
-      <Snackbar open={toast.open} autoHideDuration={3000} onClose={() => setToast(s => ({ ...s, open: false }))} anchorOrigin={{ vertical: "bottom", horizontal: "right" }}>
-        <Alert severity={toast.sev} onClose={() => setToast(s => ({ ...s, open: false }))} variant="filled">{toast.msg}</Alert>
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={3000}
+        onClose={() => setToast(s => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          severity={toast.sev}
+          variant="filled"
+          onClose={() => setToast(s => ({ ...s, open: false }))}
+        >
+          {toast.msg}
+        </Alert>
       </Snackbar>
     </Box>
   );
