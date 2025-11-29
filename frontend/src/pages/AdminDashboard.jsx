@@ -174,6 +174,7 @@ useEffect(() => {
     { text: "Manage Users", icon: <PeopleOutline />, path: "/admin/users" },
     { text: "My Expenses", icon: <AccountBalanceWallet />, path: "/admin/expenses" },
 	{ text: "Expenses Overview", icon: <AccountBalanceWallet />, path: "/admin/expenses-monitor" },
+	{ text: "Imprest", icon: <BarChart />, path: "/admin/imprest" },
     { text: "My Requests", icon: <BuildCircle />, path: "/admin/myrequests" },
     { text: "Material in Stock", icon: <Inventory2 />, path: "/admin/inventory" },
     { text: "Auditor Access", icon: <BarChart />, path: "/admin/audit-access" },

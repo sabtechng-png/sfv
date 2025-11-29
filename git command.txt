@@ -35,3 +35,10 @@ git add frontend/src/pages/grand/GrandAdminDashboard.jsx
 git add frontend/src/pages/grand/GrandAdminDashboard.css
 
 git add backend/package.json
+
+
+
+Update
+1. C:\Users\user\sfv>git add .
+2. C:\Users\user\sfv>git commit -m "Initial clean commit"
+3. C:\Users\user\sfv>git push -u origin main

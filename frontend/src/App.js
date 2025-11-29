@@ -15,6 +15,7 @@ import AdminAuditAccessPage from "./pages/admin/AdminAuditAccessPage.jsx";
 import MaterialsList from "./pages/MaterialsList.jsx";
 import UserManagementPage from "./pages/admin/UserManagementPage.jsx";
 import AdminExpenseMonitorPage from "./pages/admin/AdminExpenseMonitorPage.jsx";
+import AdminImprestPage from "./pages/admin/AdminImprestPage.jsx";
 
 import CreateQuotationPage from "./pages/quotations/CreateQuotationPage.jsx";
 import QuotationListPage from "./pages/quotations/QuotationListPage.jsx";
@@ -79,6 +80,8 @@ function App() {
             <Route path="/admin/users" element={<UserManagementPage />} />
 			 <Route path="/admin/expenses" element={<ExpensesPage />} />
 			 <Route path="/admin/expenses-monitor" element={<AdminExpenseMonitorPage />} />
+			 <Route path="/admin/imprest" element={<AdminImprestPage />} />
+
 
 
             {/* Inventory */}
