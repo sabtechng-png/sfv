@@ -16,46 +16,6 @@ const fmt = (v) => {
   return isNaN(n) ? 0 : Number(n.toFixed(2));
 };
 
-// --------------------------------------------------------------
-// 1️⃣ Single User Balance Summary
-// GET /api/balance/:email
-// --------------------------------------------------------------
-router.get("/:email", async (req, res) => {
-  const { email } = req.params;
-
-  const SQL = `
-    WITH 
-      i AS (SELECT COALESCE(SUM(amount),0) AS total_imprest FROM public.imprest WHERE user_email=$1),
-      s AS (SELECT COALESCE(SUM(amount),0) AS total_spent FROM public.expenses WHERE sender_email=$1 AND expense_type='spent' AND status='approved'),
-      t AS (SELECT COALESCE(SUM(amount),0) AS total_transfers FROM public.expenses WHERE sender_email=$1 AND expense_type='transfer'),
-      r AS (SELECT COALESCE(SUM(amount),0) AS total_refunds FROM public.expenses WHERE receiver_email=$1 AND expense_type='refund' AND status='approved')
-    SELECT 
-      i.total_imprest,
-      s.total_spent,
-      t.total_transfers,
-      r.total_refunds,
-      (i.total_imprest - s.total_spent - t.total_transfers + r.total_refunds) AS available_balance
-    FROM i,s,t,r;
-  `;
-
-  try {
-    const { rows } = await pool.query(SQL, [email]);
-    const b = rows[0] || {};
-    res.json({
-      email,
-      imprest: fmt(b.total_imprest),
-      spent: fmt(b.total_spent),
-      transfers: fmt(b.total_transfers),
-      refunds: fmt(b.total_refunds),
-      available: fmt(b.available_balance),
-      returned: 0,
-      last_updated: new Date().toISOString(),
-    });
-  } catch (err) {
-    console.error("❌ Error fetching balance:", err.message);
-    res.status(500).json({ error: "Failed to fetch balance summary" });
-  }
-});
 
 // --------------------------------------------------------------
 // 2️⃣ All Users Balance Summary
@@ -109,5 +69,48 @@ router.get("/all", async (_req, res) => {
 router.get("/health", (_req, res) => {
   res.json({ ok: true, message: "Balance route active ✅" });
 });
+
+// --------------------------------------------------------------
+// 1️⃣ Single User Balance Summary
+// GET /api/balance/:email
+// --------------------------------------------------------------
+router.get("/:email", async (req, res) => {
+  const { email } = req.params;
+
+  const SQL = `
+    WITH 
+      i AS (SELECT COALESCE(SUM(amount),0) AS total_imprest FROM public.imprest WHERE user_email=$1),
+      s AS (SELECT COALESCE(SUM(amount),0) AS total_spent FROM public.expenses WHERE sender_email=$1 AND expense_type='spent' AND status='approved'),
+      t AS (SELECT COALESCE(SUM(amount),0) AS total_transfers FROM public.expenses WHERE sender_email=$1 AND expense_type='transfer'),
+      r AS (SELECT COALESCE(SUM(amount),0) AS total_refunds FROM public.expenses WHERE receiver_email=$1 AND expense_type='refund' AND status='approved')
+    SELECT 
+      i.total_imprest,
+      s.total_spent,
+      t.total_transfers,
+      r.total_refunds,
+      (i.total_imprest - s.total_spent - t.total_transfers + r.total_refunds) AS available_balance
+    FROM i,s,t,r;
+  `;
+
+  try {
+    const { rows } = await pool.query(SQL, [email]);
+    const b = rows[0] || {};
+    res.json({
+      email,
+      imprest: fmt(b.total_imprest),
+      spent: fmt(b.total_spent),
+      transfers: fmt(b.total_transfers),
+      refunds: fmt(b.total_refunds),
+      available: fmt(b.available_balance),
+      returned: 0,
+      last_updated: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("❌ Error fetching balance:", err.message);
+    res.status(500).json({ error: "Failed to fetch balance summary" });
+  }
+});
+
+
 
 module.exports = router;

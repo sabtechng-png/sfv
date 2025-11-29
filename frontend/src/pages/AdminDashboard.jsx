@@ -172,7 +172,8 @@ useEffect(() => {
   const menu = [
     { text: "Dashboard", icon: <DashboardIcon />, path: "/admin/dashboard" },
     { text: "Manage Users", icon: <PeopleOutline />, path: "/admin/users" },
-    { text: "Expenses Overview", icon: <AccountBalanceWallet />, path: "/admin/expenses" },
+    { text: "My Expenses", icon: <AccountBalanceWallet />, path: "/admin/expenses" },
+	{ text: "Expenses Overview", icon: <AccountBalanceWallet />, path: "/admin/expenses-monitor" },
     { text: "My Requests", icon: <BuildCircle />, path: "/admin/myrequests" },
     { text: "Material in Stock", icon: <Inventory2 />, path: "/admin/inventory" },
     { text: "Auditor Access", icon: <BarChart />, path: "/admin/audit-access" },
@@ -187,32 +188,40 @@ useEffect(() => {
     return [
       {
         title: "Material in Stock",
-        value: summary.pendingRequests,
+     
         subtitle: "Materials currently in the store",
       },
+	  
+	  
+	   {
+        title: "Price Update",
+
+        subtitle: "Add new materials and price update",
+      },
+	  
       {
         title: "Pending Requests",
-        value: summary.pendingRequests,
+  
         subtitle: "Material request from staff",
       },
       {
         title: "Audit Records",
-        value: `${summary.storeHealthPct}%`,
+
         subtitle: "Store audit checks and reconciliations.",
       },
       {
         title: "Witness Actions",
-        value: summary.pendingWitness,
+   
         subtitle: "Approvals / rejections this week",
       },
       {
         title: "Work/Job Managements",
-        value: formatNaira(summary.totalExpenses),
+     
         subtitle: "Company's Job Management",
       },
       {
         title: "Materials Collected from JK",
-        value: summary.shops,
+    
         subtitle: "Material collected (jk & co)",
       },
     ];
@@ -389,6 +398,7 @@ useEffect(() => {
                             // Smart deep links based on card
                             const map = {
                               'Material in Stock': '/admin/inventory',
+							  'Price Update': '/admin/materials',
                               'Pending Requests': '/admin/requests',
                               'Audit Records': '/admin/audit',
                               'Witness Actions': '/admin/logs',

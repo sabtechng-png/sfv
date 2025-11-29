@@ -14,6 +14,7 @@ import AdminDashboard from "./pages/AdminDashboard.jsx";
 import AdminAuditAccessPage from "./pages/admin/AdminAuditAccessPage.jsx";
 import MaterialsList from "./pages/MaterialsList.jsx";
 import UserManagementPage from "./pages/admin/UserManagementPage.jsx";
+import AdminExpenseMonitorPage from "./pages/admin/AdminExpenseMonitorPage.jsx";
 
 import CreateQuotationPage from "./pages/quotations/CreateQuotationPage.jsx";
 import QuotationListPage from "./pages/quotations/QuotationListPage.jsx";
@@ -38,8 +39,7 @@ import WitnessPage from "./pages/engineer/WitnessPage.jsx";
 import StaffLayout from "./layouts/StaffLayout.jsx";
 import StaffDashboard from "./pages/StaffDashboard.jsx";
 import StaffQuotations from "./pages/staff/StaffQuotations.jsx";
-import StaffStore from "./pages/staff/StaffStore.jsx";
-import StaffLogs from "./pages/staff/StaffLogs.jsx";
+
 
 // ==== Storekeeper Pages ====
 import StorekeeperLayout from "./layouts/StorekeeperLayout.jsx";
@@ -77,6 +77,9 @@ function App() {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/materials" element={<MaterialsList />} />
             <Route path="/admin/users" element={<UserManagementPage />} />
+			 <Route path="/admin/expenses" element={<ExpensesPage />} />
+			 <Route path="/admin/expenses-monitor" element={<AdminExpenseMonitorPage />} />
+
 
             {/* Inventory */}
             <Route path="/admin/inventory" element={<StorekeeperInventoryPage role="admin" />} />
@@ -88,6 +91,7 @@ function App() {
 
             {/* Material Requests / Collection */}
             <Route path="/admin/myrequests" element={<MyRequests />} />
+			 <Route path="/admin/requests" element={<StorekeeperRequestsPage />} />
             <Route path="/admin/collections" element={<MaterialCollectionPage />} />
 
             {/* Quotations */}
@@ -144,8 +148,8 @@ function App() {
             <Route path="/staff/audit" element={<MaterialAuditPage />} />
             <Route path="/staff/expenses" element={<ExpensesPage />} />
             <Route path="/staff/collections" element={<MaterialCollectionPage />} />
-            <Route path="/staff/store" element={<StaffStore />} />
-            <Route path="/staff/logs" element={<StaffLogs />} />
+           
+			 <Route path="/staff/materials" element={<MaterialsList />} />
 		
             {/* Quotations */}
     <Route path="/staff/quotations" element={<QuotationDashboard />} />
@@ -171,6 +175,8 @@ function App() {
             <Route path="/storekeeper/inventory-logs" element={<InventoryLogsSection />} />
             <Route path="/storekeeper/audit" element={<MaterialAuditPage />} />
             <Route path="/storekeeper/collections" element={<MaterialCollectionPage />} />
+			 <Route path="/store/materials" element={<MaterialsList />} />
+			  <Route path="/Storekeeper/expenses" element={<ExpensesPage />} />
           </Route>
         </Route>
 

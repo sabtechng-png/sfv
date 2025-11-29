@@ -189,14 +189,7 @@ export default function EngineerDashboard() {
           icon: <Description sx={{ fontSize: 40, color: "#f5c400" }} />,
           link: "/engineer/quotations",
         },
-        {
-          title: "Messages",
-          value: unreadMessages,
-          desc: "View all recent communications.",
-          gradient: "linear-gradient(135deg, #001845, #0466c8)",
-          icon: <Mail sx={{ fontSize: 40, color: "#f5c400" }} />,
-          link: "/engineer/messages",
-        },
+   
         {
           title: "Auditor Page",
           value: summary.availableBalance || 0,

@@ -133,7 +133,7 @@ export default function StorekeeperDashboard() {
     { text: "Dashboard", icon: <Dashboard />, path: "/store/dashboard" },
     { text: "Store", icon: <Inventory />, path: "/storekeeper/inventory" },
     { text: "Requests", icon: <Assignment />, path: "/storekeeper/requests" },
-    { text: "Dispatch", icon: <LocalShipping />, path: "/storekeeper/dispatch" },
+   
     { text: "Auditor Page", icon: <Assessment />, path: "/storekeeper/audit" },
     { text: "Expenses", icon: <Receipt />, path: "/storekeeper/expenses" },
 	{ text: "Witness Page", icon: <Assignment />, path: "/storekeeper/witness" },
@@ -415,7 +415,7 @@ export default function StorekeeperDashboard() {
             <Button
               size="small"
               variant="contained"
-              onClick={() => navigate("/store/inventory")}
+              onClick={() => navigate("/storekeeper/inventory")}
               sx={{
                 mt: 1,
                 backgroundColor: "#c6ff00",

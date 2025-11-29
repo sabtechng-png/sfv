@@ -94,10 +94,9 @@ export default function StaffDashboard() {
     { text: "Dashboard", icon: <Dashboard />, path: "/staff/dashboard" },
     { text: "Expenses", icon: <ReceiptLong />, path: "/staff/expenses" },
     { text: "Quotations", icon: <Description />, path: "/staff/quotations" },
-    { text: "Store", icon: <Store />, path: "/staff/store" },
+    { text: "Price Update", icon: <Store />, path: "/staff/materials" },
     { text: "My Requests", icon: <BuildCircle />, path: "/staff/myrequests" },
     { text: "Auditor Page", icon: <Assessment />, path: "/staff/audit" },
-    { text: "Logs", icon: <ReceiptLong />, path: "/staff/logs" },
     { text: "Witness Page", icon: <Assignment />, path: "/staff/witness" },
   ];
 
@@ -129,11 +128,11 @@ export default function StaffDashboard() {
           link: "/staff/quotations",
         },
         {
-          title: "Store Items",
-          value: summary.storeItems || 0,
+          title: "Price Update",
+          value: 7,
           desc: "Track used and available materials.",
           gradient: "linear-gradient(135deg, #5a1d1d, #a13b3b)",
-          link: "/staff/store",
+          link: "/staff/materials",
         },
         {
           title: "Auditor Page",

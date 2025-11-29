@@ -128,8 +128,8 @@ export default function ApprenticeDashboard() {
     { text: "Dashboard", icon: <Dashboard />, path: "/apprentice/dashboard" },
     { text: "Witness Expenses", icon: <Receipt />, path: "/apprentice/expenses" },
   
-    { text: "Training & Mentorship", icon: <School />, path: "/apprentice/training" },
-    { text: "Reports", icon: <Report />, path: "/apprentice/reports" },
+    { text: "Training & Mentorship", icon: <School />, path: "#" },
+    { text: "Reports", icon: <Report />, path: "#" },
   ];
 
   // =================== Dashboard KPI Cards ===================
@@ -152,14 +152,7 @@ export default function ApprenticeDashboard() {
           link: "/apprentice/witness",
         },
 
-        {
-          title: "Manage Expenses", // <-- NEW CARD
-          value: "###",
-          desc: "Spend, verify and manage.",
-          gradient: "linear-gradient(135deg, #002b55, #0059b3)",
-          icon: <Assignment sx={{ fontSize: 38, color: "#80d8ff" }} />,
-          link: "/apprentice/expenses",
-        },
+    
 		
 		 {
           title: "Auditor Page", // <-- NEW CARD

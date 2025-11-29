@@ -8,12 +8,12 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 
+
 // --------------------------------------------------------------
-// 1️⃣ Get logs for a specific expense
-// GET /api/expense-logs/:expense_id
+// 3️⃣ Get all logs (Admin or Auditor use)
+// GET /api/expense-logs/all
 // --------------------------------------------------------------
-router.get("/:expense_id", async (req, res) => {
-  const { expense_id } = req.params;
+router.get("/all", async (_req, res) => {
   try {
     const { rows } = await pool.query(
       `
@@ -21,24 +21,24 @@ router.get("/:expense_id", async (req, res) => {
         l.expense_id,
         l.actor_email,
         u.nickname AS actor_name,
+        e.sender_email,
+        e.receiver_email,
+        e.expense_type,
+        e.status,
         l.action,
         l.log_message,
         l.timestamp
       FROM public.expense_logs l
       LEFT JOIN public.users u ON l.actor_email = u.email
-      WHERE l.expense_id = $1
-      ORDER BY l.timestamp DESC;
-      `,
-      [expense_id]
+      LEFT JOIN public.expenses e ON e.id = l.expense_id
+      ORDER BY l.timestamp DESC
+      LIMIT 500;
+      `
     );
-
-    if (!rows.length)
-      return res.status(404).json({ message: "No logs found for this expense." });
-
     res.json(rows);
   } catch (err) {
-    console.error("❌ Error fetching expense logs:", err.message);
-    res.status(500).json({ error: "Failed to fetch expense logs." });
+    console.error("❌ Error fetching all logs:", err.message);
+    res.status(500).json({ error: "Failed to fetch all logs." });
   }
 });
 
@@ -81,38 +81,6 @@ router.get("/user/:email", async (req, res) => {
   }
 });
 
-// --------------------------------------------------------------
-// 3️⃣ Get all logs (Admin or Auditor use)
-// GET /api/expense-logs/all
-// --------------------------------------------------------------
-router.get("/all", async (_req, res) => {
-  try {
-    const { rows } = await pool.query(
-      `
-      SELECT 
-        l.expense_id,
-        l.actor_email,
-        u.nickname AS actor_name,
-        e.sender_email,
-        e.receiver_email,
-        e.expense_type,
-        e.status,
-        l.action,
-        l.log_message,
-        l.timestamp
-      FROM public.expense_logs l
-      LEFT JOIN public.users u ON l.actor_email = u.email
-      LEFT JOIN public.expenses e ON e.id = l.expense_id
-      ORDER BY l.timestamp DESC
-      LIMIT 500;
-      `
-    );
-    res.json(rows);
-  } catch (err) {
-    console.error("❌ Error fetching all logs:", err.message);
-    res.status(500).json({ error: "Failed to fetch all logs." });
-  }
-});
 
 // --------------------------------------------------------------
 // 4️⃣ Optional: Filter by date range
@@ -148,6 +116,41 @@ router.get("/range", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch logs by date range." });
   }
 });
+
+// --------------------------------------------------------------
+// 1️⃣ Get logs for a specific expense
+// GET /api/expense-logs/:expense_id
+// --------------------------------------------------------------
+router.get("/:expense_id", async (req, res) => {
+  const { expense_id } = req.params;
+  try {
+    const { rows } = await pool.query(
+      `
+      SELECT 
+        l.expense_id,
+        l.actor_email,
+        u.nickname AS actor_name,
+        l.action,
+        l.log_message,
+        l.timestamp
+      FROM public.expense_logs l
+      LEFT JOIN public.users u ON l.actor_email = u.email
+      WHERE l.expense_id = $1
+      ORDER BY l.timestamp DESC;
+      `,
+      [expense_id]
+    );
+
+    if (!rows.length)
+      return res.status(404).json({ message: "No logs found for this expense." });
+
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Error fetching expense logs:", err.message);
+    res.status(500).json({ error: "Failed to fetch expense logs." });
+  }
+});
+
 
 // --------------------------------------------------------------
 // 5️⃣ Health Check
