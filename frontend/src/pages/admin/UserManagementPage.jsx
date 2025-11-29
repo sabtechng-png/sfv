@@ -1,15 +1,15 @@
-// =============================================================
-// SFV Tech — ADMIN USER MANAGEMENT PAGE (Dedicated Admin Route)
+// ======================================================================
+// SFV Tech — ADMIN USER MANAGEMENT PAGE (Fully Responsive Version)
 // Uses backend route: /api/admin-users
-// ESLint-compliant: No conditional hooks
-// =============================================================
+// Mobile • Tablet • Laptop • Desktop Optimized
+// ======================================================================
 
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Box, Paper, Grid, TextField, Button, IconButton, Chip,
   Menu, MenuItem, Dialog, DialogTitle, DialogContent,
   DialogActions, Typography, Snackbar, Alert,
-  FormControl, InputLabel, Select, Divider
+  FormControl, InputLabel, Select, Divider, useMediaQuery
 } from "@mui/material";
 
 import { DataGrid } from "@mui/x-data-grid";
@@ -40,14 +40,15 @@ const ROLE_COLORS = {
 const roleList = ["admin", "engineer", "storekeeper", "apprentice", "staff"];
 
 export default function UserManagementPage() {
-  // ============================
-  //  AUTH
-  // ============================
   const { user, token } = useAuth();
   const isAdmin = user?.role === "admin";
 
+  // Breakpoints for responsiveness
+  const isMobile = useMediaQuery("(max-width:600px)");
+  const isTablet = useMediaQuery("(max-width:900px)");
+
   // ============================
-  //  STATE (Hooks must come FIRST)
+  // STATE
   // ============================
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(0);
@@ -76,14 +77,14 @@ export default function UserManagementPage() {
   const [toast, setToast] = useState({ open: false, msg: "", sev: "success" });
 
   // ============================
-  //  FETCH USERS
+  // FETCH USERS
   // ============================
   const fetchUsers = useCallback(async () => {
     setLoading(true);
 
     try {
       const params = new URLSearchParams();
-      params.set("page", page + 1); // backend is 1-based
+      params.set("page", page + 1);
       params.set("limit", PAGE_SIZE);
 
       if (q.trim()) params.set("q", q.trim());
@@ -110,7 +111,7 @@ export default function UserManagementPage() {
   }, [fetchUsers]);
 
   // ============================
-  //  FORM HANDLING
+  // FORM HANDLING
   // ============================
   const openCreate = () => {
     setEditMode(false);
@@ -142,19 +143,14 @@ export default function UserManagementPage() {
         nickname: fNickname,
       };
 
-      if (fPassword.trim().length > 0) {
-        body.password = fPassword;
-      }
+      if (fPassword.trim()) body.password = fPassword;
 
       const url = `${API_BASE}/api/admin-users${editMode ? `/${selectedRow.id}` : ""}`;
       const method = editMode ? "PATCH" : "POST";
 
       const res = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(body),
       });
 
@@ -178,10 +174,7 @@ export default function UserManagementPage() {
         `${API_BASE}/api/admin-users/${selectedRow.id}/reset-password`,
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ password: resetPassword }),
         }
       );
@@ -225,7 +218,7 @@ export default function UserManagementPage() {
     params.set("page", 1);
     params.set("limit", totalRows);
 
-    const res = await fetch(`${API_BASE}/api/admin-users?${params}`, {
+    const res = await fetch(`${API_BASE}/api/admin-users?${params.toString()}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -233,22 +226,11 @@ export default function UserManagementPage() {
     if (!data.success) return;
 
     const csvHeader = "id,name,email,role,nickname,last_login,created_at,updated_at\n";
-    const csvRows = data.users
-      .map(u => [
-        u.id,
-        u.name,
-        u.email,
-        u.role,
-        u.nickname,
-        u.last_login,
-        u.created_at,
-        u.updated_at
-      ].join(","));
+    const csvRows = data.users.map(u =>
+      [u.id, u.name, u.email, u.role, u.nickname, u.last_login, u.created_at, u.updated_at].join(",")
+    );
 
-    const blob = new Blob([csvHeader + csvRows.join("\n")], {
-      type: "text/csv",
-    });
-
+    const blob = new Blob([csvHeader + csvRows.join("\n")], { type: "text/csv" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "users.csv";
@@ -259,27 +241,26 @@ export default function UserManagementPage() {
   // ROLE CHIP
   // ============================
   const RoleChip = ({ value }) => {
-    const v = (value || "").toLowerCase();
+    const v = String(value || "").toLowerCase();
     const c = ROLE_COLORS[v] || { bg: "#455a64", fg: "#fff" };
-    return (
-      <Chip label={v.toUpperCase()} size="small" sx={{ bgcolor: c.bg, color: c.fg }} />
-    );
+    return <Chip label={v.toUpperCase()} size="small" sx={{ bgcolor: c.bg, color: c.fg }} />;
   };
 
   // ============================
   // TABLE COLUMNS
   // ============================
   const columns = [
-    { field: "name", headerName: "Name", flex: 1.4 },
-    { field: "email", headerName: "Email", flex: 1.6 },
+    { field: "name", headerName: "Name", flex: 1.4, minWidth: 140 },
+    { field: "email", headerName: "Email", flex: 1.6, minWidth: 160 },
     {
       field: "role",
       headerName: "Role",
       flex: 1,
+      minWidth: 90,
       renderCell: p => <RoleChip value={p.value} />,
     },
-    { field: "nickname", headerName: "Nickname", flex: 1 },
-    { field: "created_at", headerName: "Created", flex: 1 },
+    { field: "nickname", headerName: "Nickname", flex: 1, minWidth: 110 },
+    { field: "created_at", headerName: "Created", flex: 1, minWidth: 120 },
     {
       field: "actions",
       headerName: "Actions",
@@ -299,36 +280,52 @@ export default function UserManagementPage() {
   ];
 
   // ============================
-  // CONDITIONAL UI (AFTER HOOKS)
+  // SECURITY REDIRECT
   // ============================
-  if (!isAdmin) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!isAdmin) return <Navigate to="/login" replace />;
 
-  // ============================
-  // RENDER
-  // ============================
+  // ======================================================================
+  // RENDERED UI
+  // ======================================================================
   return (
-    <Box p={3}>
+    <Box p={{ xs: 1, sm: 2, md: 3 }}>
 
-      {/* HEADER */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5" fontWeight={800}>User Management</Typography>
+      {/* ------------------------------------------- */}
+      {/* HEADER (Responsive) */}
+      {/* ------------------------------------------- */}
+      <Box
+        display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
+        justifyContent="space-between"
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        gap={2}
+        mb={2}
+      >
+        <Typography variant="h5" fontWeight={800}>
+          User Management
+        </Typography>
 
         <Box display="flex" gap={1}>
           <IconButton onClick={fetchUsers}>
             <RefreshIcon />
           </IconButton>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
+          >
             Add User
           </Button>
         </Box>
       </Box>
 
-      {/* FILTERS */}
-      <Paper sx={{ p: 2, mb: 2 }}>
+      {/* ------------------------------------------- */}
+      {/* FILTER SECTION (Responsive Grid) */}
+      {/* ------------------------------------------- */}
+      <Paper sx={{ p: { xs: 2, sm: 3 }, mb: 2 }}>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <TextField
               label="Search"
               fullWidth
@@ -343,7 +340,7 @@ export default function UserManagementPage() {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <InputLabel>Filter by Role</InputLabel>
               <Select
@@ -355,9 +352,9 @@ export default function UserManagementPage() {
                 }}
               >
                 <MenuItem value="">All Roles</MenuItem>
-                {roleList.map(r => (
-                  <MenuItem key={r} value={r}>
-                    {r.toUpperCase()}
+                {roleList.map(role => (
+                  <MenuItem key={role} value={role}>
+                    {role.toUpperCase()}
                   </MenuItem>
                 ))}
               </Select>
@@ -366,8 +363,10 @@ export default function UserManagementPage() {
         </Grid>
       </Paper>
 
-      {/* TABLE */}
-      <Paper sx={{ p: 1 }}>
+      {/* ------------------------------------------- */}
+      {/* DATAGRID (Fully Responsive) */}
+      {/* ------------------------------------------- */}
+      <Paper sx={{ p: { xs: 1, sm: 2 } }}>
         <DataGrid
           rows={rows}
           columns={columns}
@@ -377,7 +376,13 @@ export default function UserManagementPage() {
           pageSizeOptions={[PAGE_SIZE]}
           paginationModel={{ page, pageSize: PAGE_SIZE }}
           onPaginationModelChange={m => setPage(m.page)}
-          sx={{ height: 600 }}
+          sx={{
+            height: { xs: 450, sm: 520, md: 600, lg: 650 },
+            fontSize: { xs: "11px", sm: "13px", md: "14px" },
+            "& .MuiDataGrid-columnHeaders": {
+              fontSize: { xs: "11px", sm: "13px" },
+            },
+          }}
         />
 
         <Divider sx={{ my: 1 }} />
@@ -389,7 +394,9 @@ export default function UserManagementPage() {
         </Box>
       </Paper>
 
+      {/* ------------------------------------------- */}
       {/* ACTION MENU */}
+      {/* ------------------------------------------- */}
       <Menu
         anchorEl={menuAnchor}
         open={Boolean(menuAnchor)}
@@ -408,38 +415,37 @@ export default function UserManagementPage() {
         </MenuItem>
       </Menu>
 
-      {/* ADD / EDIT USER */}
-      <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="sm" fullWidth>
+      {/* ------------------------------------------- */}
+      {/* ADD / EDIT USER DIALOG */}
+      {/* ------------------------------------------- */}
+      <Dialog
+        open={openForm}
+        onClose={() => setOpenForm(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            p: { xs: 1, sm: 2 },
+            borderRadius: { xs: 1, sm: 2 },
+          },
+        }}
+      >
         <DialogTitle>{editMode ? "Edit User" : "Add User"}</DialogTitle>
 
         <DialogContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Name"
-                value={fName}
-                onChange={e => setFName(e.target.value)}
-              />
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="Name" value={fName} onChange={e => setFName(e.target.value)} />
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Email"
-                value={fEmail}
-                onChange={e => setFEmail(e.target.value)}
-              />
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="Email" value={fEmail} onChange={e => setFEmail(e.target.value)} />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Role</InputLabel>
-                <Select
-                  value={fRole}
-                  label="Role"
-                  onChange={e => setFRole(e.target.value)}
-                >
+                <Select value={fRole} label="Role" onChange={e => setFRole(e.target.value)}>
                   {roleList.map(r => (
                     <MenuItem key={r} value={r}>
                       {r.toUpperCase()}
@@ -449,13 +455,8 @@ export default function UserManagementPage() {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Nickname"
-                value={fNickname}
-                onChange={e => setFNickname(e.target.value)}
-              />
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="Nickname" value={fNickname} onChange={e => setFNickname(e.target.value)} />
             </Grid>
 
             <Grid item xs={12}>
@@ -478,8 +479,21 @@ export default function UserManagementPage() {
         </DialogActions>
       </Dialog>
 
+      {/* ------------------------------------------- */}
       {/* RESET PASSWORD */}
-      <Dialog open={openReset} onClose={() => setOpenReset(false)} maxWidth="xs" fullWidth>
+      {/* ------------------------------------------- */}
+      <Dialog
+        open={openReset}
+        onClose={() => setOpenReset(false)}
+        fullWidth
+        maxWidth="xs"
+        PaperProps={{
+          sx: {
+            p: { xs: 1, sm: 2 },
+            borderRadius: { xs: 1, sm: 2 },
+          },
+        }}
+      >
         <DialogTitle>Reset Password</DialogTitle>
 
         <DialogContent>
@@ -494,17 +508,26 @@ export default function UserManagementPage() {
 
         <DialogActions>
           <Button onClick={() => setOpenReset(false)}>Cancel</Button>
-          <Button variant="contained" onClick={doResetPwd}>
-            Reset
-          </Button>
+          <Button variant="contained" onClick={doResetPwd}>Reset</Button>
         </DialogActions>
       </Dialog>
 
+      {/* ------------------------------------------- */}
       {/* DELETE CONFIRM */}
-      <Dialog open={openDelete} onClose={() => setOpenDelete(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ color: "error.main" }}>
-          Delete User?
-        </DialogTitle>
+      {/* ------------------------------------------- */}
+      <Dialog
+        open={openDelete}
+        onClose={() => setOpenDelete(false)}
+        fullWidth
+        maxWidth="xs"
+        PaperProps={{
+          sx: {
+            p: { xs: 1, sm: 2 },
+            borderRadius: { xs: 1, sm: 2 },
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: "error.main" }}>Delete User?</DialogTitle>
 
         <DialogContent>
           <Typography>This action cannot be undone.</Typography>
@@ -518,7 +541,9 @@ export default function UserManagementPage() {
         </DialogActions>
       </Dialog>
 
-      {/* TOAST */}
+      {/* ------------------------------------------- */}
+      {/* TOAST NOTIFICATION */}
+      {/* ------------------------------------------- */}
       <Snackbar
         open={toast.open}
         autoHideDuration={3000}
