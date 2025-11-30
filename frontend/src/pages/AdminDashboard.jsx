@@ -176,7 +176,7 @@ useEffect(() => {
 	{ text: "Expenses Overview", icon: <AccountBalanceWallet />, path: "/admin/expenses-monitor" },
 	{ text: "Imprest", icon: <BarChart />, path: "/admin/imprest" },
     { text: "My Requests", icon: <BuildCircle />, path: "/admin/myrequests" },
-    { text: "Material in Stock", icon: <Inventory2 />, path: "/admin/inventory" },
+    { text: "Material in Store", icon: <Inventory2 />, path: "/admin/inventory" },
     { text: "Auditor Access", icon: <BarChart />, path: "/admin/audit-access" },
     { text: "Logs & Audits", icon: <ReceiptLong />, path: "/admin/audit" },
     { text: "Quotation", icon: <Inventory2 />, path: "/admin/quotations" },
@@ -188,7 +188,7 @@ useEffect(() => {
     if (!summary) return [];
     return [
       {
-        title: "Material in Stock",
+        title: "Material in Store",
      
         subtitle: "Materials currently in the store",
       },

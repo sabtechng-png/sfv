@@ -22,6 +22,8 @@ import { useAuth } from "../../context/AuthContext";
 
 import { generateQuotationPDF } from "../../components/pdf/GenerateQuotationPDF";
 import { generateInvoicePDF } from "../../components/pdf/GenerateInvoicePDF";
+import { generateConsentFormPDF } from "../../components/pdf/GenerateConsentFormPDF";
+
 
 import EditIcon from "@mui/icons-material/Edit";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -105,13 +107,14 @@ const QuotationViewPage = () => {
 
         <Stack direction="row" spacing={2}>
           {/* BACK BUTTON */}
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate("/quotations")}
-          >
-            Back
-          </Button>
+         <Button
+  variant="outlined"
+  startIcon={<ArrowBackIcon />}
+  onClick={() => navigate(-1)}
+>
+  Back
+</Button>
+
 
           {/* DOWNLOAD QUOTATION PDF */}
           <Button
@@ -121,6 +124,13 @@ const QuotationViewPage = () => {
           >
             Download PDF
           </Button>
+<Button
+  variant="contained"
+  color="primary"
+  onClick={() => generateConsentFormPDF(quotation, settings)}
+>
+  Download Consent Form
+</Button>
 
           {/* INVOICE BUTTON (only if approved) */}
           {quotation.status === "Approved" && (
