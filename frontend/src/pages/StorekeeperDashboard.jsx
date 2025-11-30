@@ -1,6 +1,6 @@
-// ============================================================
-// SFV Tech | Storekeeper Dashboard (Emerald / Lime Theme v3)
-// ============================================================
+// =======================================================================
+// SFV Tech | Storekeeper Dashboard (Emerald / Lime Theme v3 - Responsive)
+// =======================================================================
 
 import React, { useState, useEffect } from "react";
 import {
@@ -24,7 +24,9 @@ import {
   Breadcrumbs,
   Grow,
   CircularProgress,
+  useMediaQuery,
 } from "@mui/material";
+
 import {
   Dashboard,
   Inventory,
@@ -43,6 +45,7 @@ import {
   ReceiptLong,
   WarningAmber,
 } from "@mui/icons-material";
+
 import { useAuth } from "../context/AuthContext";
 import { useSnackbar } from "notistack";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -55,6 +58,9 @@ export default function StorekeeperDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isMobile = useMediaQuery("(max-width:600px)");
+  const isTablet = useMediaQuery("(max-width:900px)");
+
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -62,14 +68,17 @@ export default function StorekeeperDashboard() {
   const [notif, setNotif] = useState(1);
   const [greeting, setGreeting] = useState("");
 
+  // Greeting
   useEffect(() => {
     const hr = new Date().getHours();
     setGreeting(hr < 12 ? "Good Morning" : hr < 18 ? "Good Afternoon" : "Good Evening");
   }, []);
 
+  // Summary fetch
   const fetchSummary = async () => {
     try {
       const res = await api.get("/api/storekeeper/summary");
+
       const data =
         res.data && Object.keys(res.data).length
           ? res.data
@@ -87,9 +96,13 @@ export default function StorekeeperDashboard() {
                 { name: "Earth Rod 2m", stock: 15 },
               ],
             };
+
       setSummary(data);
     } catch {
-      enqueueSnackbar("Failed to load store data (showing sample)", { variant: "warning" });
+      enqueueSnackbar("Failed to load store data (showing sample)", {
+        variant: "warning",
+      });
+
       setSummary({
         inventory: 120,
         requests: 8,
@@ -111,7 +124,7 @@ export default function StorekeeperDashboard() {
 
   useEffect(() => {
     fetchSummary();
-    const interval = setInterval(fetchSummary, 30000); // Auto refresh every 30s
+    const interval = setInterval(fetchSummary, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -122,7 +135,11 @@ export default function StorekeeperDashboard() {
       <Typography
         key={i}
         color={i === arr.length - 1 ? "#c6ff00" : "#fff"}
-        sx={{ cursor: "pointer", textTransform: "capitalize" }}
+        sx={{
+          cursor: "pointer",
+          textTransform: "capitalize",
+          fontSize: isMobile ? 12 : 14,
+        }}
         onClick={() => navigate("/" + arr.slice(0, i + 1).join("/"))}
       >
         {seg}
@@ -133,61 +150,54 @@ export default function StorekeeperDashboard() {
     { text: "Dashboard", icon: <Dashboard />, path: "/store/dashboard" },
     { text: "Store", icon: <Inventory />, path: "/storekeeper/inventory" },
     { text: "Requests", icon: <Assignment />, path: "/storekeeper/requests" },
-   
     { text: "Auditor Page", icon: <Assessment />, path: "/storekeeper/audit" },
     { text: "Expenses", icon: <Receipt />, path: "/storekeeper/expenses" },
-	{ text: "Witness Page", icon: <Assignment />, path: "/storekeeper/witness" },
-
+    { text: "Witness Page", icon: <Assignment />, path: "/storekeeper/witness" },
   ];
 
   const cards = summary
     ? [
         {
           title: "Materials in Store",
-          value: summary.inventory,
-          desc: "All items currently available in store.",
+          desc: "All items currently available.",
           gradient: "linear-gradient(135deg, #004d40, #26a69a)",
           icon: <Inventory2 sx={{ fontSize: 40, color: "#c6ff00" }} />,
           link: "/storekeeper/inventory",
         },
         {
           title: "Pending Requests",
-          value: summary.requests,
-          desc: "Requests awaiting approval or fulfillment.",
+         
+          desc: "Requests awaiting processing.",
           gradient: "linear-gradient(135deg, #00796b, #43a047)",
           icon: <PendingActions sx={{ fontSize: 40, color: "#c6ff00" }} />,
           link: "/storekeeper/requests",
         },
         {
           title: "My Requests",
-          value: summary.requests,
-          desc: "Materials for myself",
+          desc: "Request material personally.",
           gradient: "linear-gradient(135deg, #1b5e20, #4caf50)",
           icon: <LocalShipping sx={{ fontSize: 40, color: "#c6ff00" }} />,
           link: "/storekeeper/material_request",
         },
         {
-          title: "Auditor Page ",
-          value: summary.audits,
-          desc: "Store audit checks and reconciliations.",
+          title: "Auditor Page",
+         
+          desc: "Audit checks and reviews.",
           gradient: "linear-gradient(135deg, #33691e, #76ff03)",
           icon: <CheckCircleOutline sx={{ fontSize: 40, color: "#c6ff00" }} />,
           link: "/storekeeper/audit",
         },
         {
           title: "Manage Expenses",
-          value: summary.expenses,
-          desc: "Shared expense management section.",
+          desc: "Shared expense section.",
           gradient: "linear-gradient(135deg, #2e7d32, #aeea00)",
           icon: <ReceiptLong sx={{ fontSize: 40, color: "#c6ff00" }} />,
           link: "/storekeeper/expenses",
         },
-		
-		 {
-          title: "Material Collected from JK",
-          value: summary.expenses,
-          desc: "Materials collected from JK or Other shops",
-          gradient: "linear-gradient(135deg, #2e7d32, #aeea00)",
+        {
+          title: "Collected from JK",
+          desc: "Materials from JK shop.",
+          gradient: "linear-gradient(135deg, #2e7d32, #9ccc00)",
           icon: <ReceiptLong sx={{ fontSize: 40, color: "#c6ff00" }} />,
           link: "/storekeeper/collections",
         },
@@ -196,7 +206,7 @@ export default function StorekeeperDashboard() {
 
   return (
     <Box sx={{ minHeight: "100vh", background: "#001f1f", color: "#fff" }}>
-      {/* ======= TOP BAR ======= */}
+      {/* ==================== TOP BAR ==================== */}
       <Box
         sx={{
           position: "sticky",
@@ -204,26 +214,38 @@ export default function StorekeeperDashboard() {
           zIndex: 10,
           background: "linear-gradient(90deg, #003c3c, #009688)",
           py: 1.5,
-          px: 3,
+          px: { xs: 1.5, sm: 3 },
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.5)",
+          flexWrap: "wrap",
+          gap: 1,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: "#c6ff00" }}>
             <MenuIcon />
           </IconButton>
-          <img src={logo} alt="SFV" style={{ height: 32, borderRadius: 4 }} />
-          <Typography fontWeight={700} variant="h6" color="#c6ff00">
-            SFV Storekeeper Portal
-          </Typography>
+
+          <img
+            src={logo}
+            alt="SFV"
+            style={{
+              height: isMobile ? 26 : 32,
+              borderRadius: 4,
+            }}
+          />
+
+          {!isMobile && (
+            <Typography fontWeight={700} variant="h6" color="#c6ff00">
+              SFV Storekeeper Portal
+            </Typography>
+          )}
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: isMobile ? 0 : 2 }}>
           <Tooltip title="Messages">
-            <IconButton sx={{ color: "#c6ff00" }}>
+            <IconButton sx={{ color: "#c6ff00", p: isMobile ? 0.5 : 1 }}>
               <Badge badgeContent={unread} color="error">
                 <Mail />
               </Badge>
@@ -231,7 +253,7 @@ export default function StorekeeperDashboard() {
           </Tooltip>
 
           <Tooltip title="Notifications">
-            <IconButton sx={{ color: "#c6ff00" }}>
+            <IconButton sx={{ color: "#c6ff00", p: isMobile ? 0.5 : 1 }}>
               <Badge badgeContent={notif} color="error">
                 <Notifications />
               </Badge>
@@ -239,25 +261,28 @@ export default function StorekeeperDashboard() {
           </Tooltip>
 
           <Tooltip title="Refresh">
-            <IconButton sx={{ color: "#c6ff00" }} onClick={fetchSummary}>
+            <IconButton sx={{ color: "#c6ff00", p: isMobile ? 0.5 : 1 }} onClick={fetchSummary}>
               <Refresh />
             </IconButton>
           </Tooltip>
 
-          <Avatar sx={{ bgcolor: "#c6ff00", color: "#003c3c", fontWeight: 700 }}>
-            {user?.name?.charAt(0) || "S"}
-          </Avatar>
+          {!isMobile && (
+            <Avatar sx={{ bgcolor: "#c6ff00", color: "#003c3c", fontWeight: 700 }}>
+              {user?.name?.charAt(0) || "S"}
+            </Avatar>
+          )}
         </Box>
       </Box>
 
-      {/* ======= SIDE DRAWER ======= */}
+      {/* ==================== SIDE DRAWER ==================== */}
       <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <Box sx={{ width: 250, background: "#003c3c", height: "100%" }}>
-          <Box sx={{ p: 2, textAlign: "center", borderBottom: "1px solid #00796b" }}>
+          <Box sx={{ p: 2, textAlign: "center" }}>
             <Typography variant="h6" fontWeight={700} color="#c6ff00">
               Store Menu
             </Typography>
           </Box>
+
           <List>
             {menuItems.map((item) => (
               <ListItem disablePadding key={item.text}>
@@ -268,7 +293,9 @@ export default function StorekeeperDashboard() {
               </ListItem>
             ))}
           </List>
-          <Divider sx={{ borderColor: "#004d40" }} />
+
+          <Divider />
+
           <ListItemButton onClick={() => navigate("/")}>
             <ListItemIcon sx={{ color: "#c6ff00" }}>
               <Logout />
@@ -278,12 +305,14 @@ export default function StorekeeperDashboard() {
         </Box>
       </Drawer>
 
-      {/* ======= BREADCRUMBS + GREETING ======= */}
-      <Box sx={{ px: 4, pt: 2 }}>
+      {/* ==================== BREADCRUMBS + GREETING ==================== */}
+      <Box sx={{ px: { xs: 2, sm: 4 }, pt: 2 }}>
         <Breadcrumbs separator="›">{breadcrumbs}</Breadcrumbs>
-        <Typography variant="h5" fontWeight={700} mt={2}>
+
+        <Typography variant={isMobile ? "h6" : "h5"} fontWeight={700} mt={1}>
           {`${greeting}, ${user?.name || "Storekeeper"}`} 👋
         </Typography>
+
         <Typography variant="body2" sx={{ opacity: 0.7 }}>
           {new Date().toLocaleDateString("en-US", {
             weekday: "long",
@@ -294,10 +323,10 @@ export default function StorekeeperDashboard() {
         </Typography>
       </Box>
 
-      {/* ======= KPI CARDS ======= */}
-      <Box sx={{ p: 4 }}>
+      {/* ==================== KPI CARDS ==================== */}
+      <Box sx={{ px: { xs: 2, sm: 4 }, py: 3 }}>
         {loading ? (
-          <Box sx={{ textAlign: "center", mt: 8 }}>
+          <Box sx={{ textAlign: "center", mt: 6 }}>
             <CircularProgress color="success" />
           </Box>
         ) : (
@@ -310,34 +339,38 @@ export default function StorekeeperDashboard() {
                       background: card.gradient,
                       borderRadius: 3,
                       color: "#fff",
+                      height: "100%",
                       boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
-                      transition: "transform 0.3s ease",
                       "&:hover": {
                         transform: "translateY(-6px)",
-                        boxShadow: "0 12px 25px rgba(0,0,0,0.6)",
+                        transition: "0.3s",
                       },
                     }}
                   >
                     <CardContent>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                         {card.icon}
-                        <Typography variant="h6" fontWeight={700}>
-                          {card.title}
-                        </Typography>
+                        <Typography fontWeight={700}>{card.title}</Typography>
                       </Box>
-                      <Typography variant="h3" fontWeight={800} color="#c6ff00" mt={1}>
-                        {card.value || 0}
-                      </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.85, mb: 2 }}>
+
+                      {card.value && (
+                        <Typography variant="h3" fontWeight={800} color="#c6ff00" mt={1}>
+                          {card.value}
+                        </Typography>
+                      )}
+
+                      <Typography variant="body2" sx={{ opacity: 0.85, mt: 1 }}>
                         {card.desc}
                       </Typography>
+
                       <Button
                         variant="contained"
+                        fullWidth={isMobile}
                         sx={{
+                          mt: 2,
                           backgroundColor: "#c6ff00",
                           color: "#003c3c",
                           fontWeight: 700,
-                          "&:hover": { backgroundColor: "#d7ff33" },
                         }}
                         onClick={() => navigate(card.link)}
                       >
@@ -352,22 +385,23 @@ export default function StorekeeperDashboard() {
         )}
       </Box>
 
-      {/* ======= LOW STOCK ALERT WIDGET ======= */}
+      {/* ==================== LOW STOCK ALERT ==================== */}
       {summary && summary.inventoryData && (
-        <Box sx={{ px: 4, mt: 1 }}>
-          <Typography variant="h6" fontWeight={700} mb={1} color="#c6ff00">
+        <Box sx={{ px: { xs: 2, sm: 4 }, mt: 1 }}>
+          <Typography variant="h6" fontWeight={700} color="#c6ff00" mb={1}>
             ⚠️ Low Stock Alerts
           </Typography>
+
           <Box
             sx={{
+              p: { xs: 2, sm: 3 },
               background: "linear-gradient(90deg, #004d40, #00796b)",
               borderRadius: 3,
-              p: 2,
               boxShadow: "0 3px 10px rgba(0,0,0,0.4)",
             }}
           >
             {summary.inventoryData.filter((i) => i.stock < 10).length === 0 ? (
-              <Typography variant="body2" color="#c6ff00" textAlign="center">
+              <Typography textAlign="center" color="#c6ff00">
                 ✅ All items sufficiently stocked.
               </Typography>
             ) : (
@@ -380,29 +414,20 @@ export default function StorekeeperDashboard() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
+                      flexDirection: isMobile ? "column" : "row",
+                      textAlign: isMobile ? "center" : "left",
                       py: 1,
                       px: 2,
                       mb: 1,
                       borderRadius: 2,
-                      background:
-                        i.stock < 5
-                          ? "rgba(255, 0, 0, 0.25)"
-                          : "rgba(255, 235, 59, 0.25)",
-                      animation: "pulse 1.5s infinite",
-                      "@keyframes pulse": {
-                        "0%": { opacity: 0.7 },
-                        "50%": { opacity: 1 },
-                        "100%": { opacity: 0.7 },
-                      },
+                      background: i.stock < 5 ? "rgba(255,0,0,0.25)" : "rgba(255,235,59,0.25)",
                     }}
                   >
-                    <Typography variant="body1" fontWeight={600}>
-                      {i.name}
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography fontWeight={600}>{i.name}</Typography>
+
+                    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                       <WarningAmber sx={{ color: i.stock < 5 ? "red" : "#ffeb3b" }} />
                       <Typography
-                        variant="body2"
                         fontWeight={700}
                         sx={{ color: i.stock < 5 ? "red" : "#ffeb3b" }}
                       >
@@ -412,17 +437,17 @@ export default function StorekeeperDashboard() {
                   </Box>
                 ))
             )}
+
             <Button
-              size="small"
               variant="contained"
-              onClick={() => navigate("/storekeeper/inventory")}
+              fullWidth={isMobile}
               sx={{
-                mt: 1,
+                mt: 2,
                 backgroundColor: "#c6ff00",
                 color: "#003c3c",
                 fontWeight: 700,
-                "&:hover": { backgroundColor: "#d7ff33" },
               }}
+              onClick={() => navigate("/storekeeper/inventory")}
             >
               View Inventory
             </Button>
@@ -430,22 +455,21 @@ export default function StorekeeperDashboard() {
         </Box>
       )}
 
-      {/* ======= FOOTER ======= */}
+      {/* ==================== FOOTER ==================== */}
       <Box
         sx={{
           textAlign: "center",
           py: 2,
           mt: 4,
-          borderTop: "1px solid #004d40",
           background: "#002f2f",
-          fontSize: 14,
           color: "#c6ff00",
+          fontSize: { xs: 12, sm: 14 },
         }}
       >
         © {new Date().getFullYear()} SFV Tech. All Rights Reserved.
         <br />
         <Typography variant="caption" sx={{ opacity: 0.7 }}>
-          v3.0.0 — Auto-updating inventory monitor active
+          v3.0.0 — Responsive Store Dashboard Active
         </Typography>
       </Box>
     </Box>

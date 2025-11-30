@@ -1,7 +1,6 @@
-// ============================================================
-// SFV Tech | Apprentice Dashboard (Royal Blue / Silver Theme)
-// Enhanced: Added Witness Page link + Witness Portal card
-// ============================================================
+// =======================================================================
+// SFV Tech | Apprentice Dashboard (Royal Blue / Silver Theme - Responsive v3)
+// =======================================================================
 
 import React, { useState, useEffect } from "react";
 import {
@@ -27,7 +26,9 @@ import {
   CircularProgress,
   LinearProgress,
   Chip,
+  useMediaQuery,
 } from "@mui/material";
+
 import {
   Dashboard,
   Receipt,
@@ -43,6 +44,7 @@ import {
   Assignment,
   WorkspacePremium,
 } from "@mui/icons-material";
+
 import { useAuth } from "../context/AuthContext";
 import { useSnackbar } from "notistack";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -54,6 +56,9 @@ export default function ApprenticeDashboard() {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isMobile = useMediaQuery("(max-width:600px)");
+  const isTablet = useMediaQuery("(max-width:900px)");
 
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -87,7 +92,7 @@ export default function ApprenticeDashboard() {
             };
       setSummary(data);
     } catch {
-      enqueueSnackbar("Network error — using demo data", { variant: "warning" });
+      enqueueSnackbar("Network Error — showing demo data.", { variant: "warning" });
       setSummary({
         pendingExpenses: 3,
         witnessedExpenses: 18,
@@ -109,6 +114,7 @@ export default function ApprenticeDashboard() {
     fetchSummary();
   }, []);
 
+  // Breadcrumbs
   const breadcrumbs = location.pathname
     .split("/")
     .filter(Boolean)
@@ -116,28 +122,28 @@ export default function ApprenticeDashboard() {
       <Typography
         key={i}
         color={i === arr.length - 1 ? "#80d8ff" : "#fff"}
-        sx={{ cursor: "pointer", textTransform: "capitalize" }}
+        sx={{
+          cursor: "pointer",
+          textTransform: "capitalize",
+          fontSize: isMobile ? 12 : 14,
+        }}
         onClick={() => navigate("/" + arr.slice(0, i + 1).join("/"))}
       >
         {seg}
       </Typography>
     ));
 
-  // =================== Sidebar Items ===================
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/apprentice/dashboard" },
     { text: "Witness Expenses", icon: <Receipt />, path: "/apprentice/expenses" },
-  
     { text: "Training & Mentorship", icon: <School />, path: "#" },
     { text: "Reports", icon: <Report />, path: "#" },
   ];
 
-  // =================== Dashboard KPI Cards ===================
   const cards = summary
     ? [
         {
           title: "Manage Expenses",
-          value: summary.pendingExpenses,
           desc: "Expenses awaiting your confirmation.",
           gradient: "linear-gradient(135deg, #001a33, #004c99)",
           icon: <PendingActions sx={{ fontSize: 38, color: "#80d8ff" }} />,
@@ -145,30 +151,25 @@ export default function ApprenticeDashboard() {
         },
         {
           title: "Witnessed Expenses",
-          value: summary.witnessedExpenses,
           desc: "Expenses you’ve reviewed and confirmed.",
           gradient: "linear-gradient(135deg, #003366, #0066cc)",
           icon: <DoneAll sx={{ fontSize: 38, color: "#80d8ff" }} />,
           link: "/apprentice/witness",
         },
-
-    
-		
-		 {
-          title: "Auditor Page", // <-- NEW CARD
-          value: summary.flaggedExpenses,
+        {
+          title: "Auditor Page",
           desc: "Admin permission is required.",
           gradient: "linear-gradient(135deg, #002b55, #0059b3)",
           icon: <Assignment sx={{ fontSize: 38, color: "#80d8ff" }} />,
-           link: "/apprentice/audit",
+          link: "/apprentice/audit",
         },
-
       ]
     : [];
 
   return (
     <Box sx={{ minHeight: "100vh", background: "#001a33", color: "#fff" }}>
-      {/* ======= TOP BAR ======= */}
+
+      {/* ================= TOP BAR ================= */}
       <Box
         sx={{
           position: "sticky",
@@ -176,26 +177,38 @@ export default function ApprenticeDashboard() {
           zIndex: 10,
           background: "linear-gradient(90deg, #002b55, #004c99)",
           py: 1.5,
-          px: 3,
+          px: { xs: 1.5, sm: 3 },
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 1,
           boxShadow: "0 2px 12px rgba(0,0,0,0.5)",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {/* LEFT */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: "#80d8ff" }}>
             <MenuIcon />
           </IconButton>
-          <img src={logo} alt="SFV" style={{ height: 32, borderRadius: 4 }} />
-          <Typography fontWeight={700} variant="h6" color="#80d8ff">
-            SFV Apprentice Portal
-          </Typography>
+
+          <img
+            src={logo}
+            alt="SFV"
+            style={{ height: isMobile ? 26 : 32, borderRadius: 4 }}
+          />
+
+          {!isMobile && (
+            <Typography fontWeight={700} variant="h6" color="#80d8ff">
+              SFV Apprentice Portal
+            </Typography>
+          )}
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {/* RIGHT */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: isMobile ? 0 : 2 }}>
           <Tooltip title="Messages">
-            <IconButton sx={{ color: "#80d8ff" }}>
+            <IconButton sx={{ color: "#80d8ff", p: isMobile ? 0.5 : 1 }}>
               <Badge badgeContent={unread} color="error">
                 <Mail />
               </Badge>
@@ -203,7 +216,7 @@ export default function ApprenticeDashboard() {
           </Tooltip>
 
           <Tooltip title="Notifications">
-            <IconButton sx={{ color: "#80d8ff" }}>
+            <IconButton sx={{ color: "#80d8ff", p: isMobile ? 0.5 : 1 }}>
               <Badge badgeContent={notif} color="error">
                 <Notifications />
               </Badge>
@@ -211,25 +224,28 @@ export default function ApprenticeDashboard() {
           </Tooltip>
 
           <Tooltip title="Refresh">
-            <IconButton sx={{ color: "#80d8ff" }} onClick={fetchSummary}>
+            <IconButton sx={{ color: "#80d8ff", p: isMobile ? 0.5 : 1 }} onClick={fetchSummary}>
               <Refresh />
             </IconButton>
           </Tooltip>
 
-          <Avatar sx={{ bgcolor: "#80d8ff", color: "#001a33", fontWeight: 700 }}>
-            {user?.name?.charAt(0) || "A"}
-          </Avatar>
+          {!isMobile && (
+            <Avatar sx={{ bgcolor: "#80d8ff", color: "#001a33", fontWeight: 700 }}>
+              {user?.name?.charAt(0) || "A"}
+            </Avatar>
+          )}
         </Box>
       </Box>
 
-      {/* ======= SIDE DRAWER ======= */}
+      {/* ================= SIDE DRAWER ================= */}
       <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <Box sx={{ width: 250, background: "#002b55", height: "100%" }}>
-          <Box sx={{ p: 2, textAlign: "center", borderBottom: "1px solid #004c99" }}>
+          <Box sx={{ p: 2, textAlign: "center" }}>
             <Typography variant="h6" fontWeight={700} color="#80d8ff">
               Apprentice Menu
             </Typography>
           </Box>
+
           <List>
             {menuItems.map((item) => (
               <ListItem disablePadding key={item.text}>
@@ -245,7 +261,9 @@ export default function ApprenticeDashboard() {
               </ListItem>
             ))}
           </List>
-          <Divider sx={{ borderColor: "#003366" }} />
+
+          <Divider />
+
           <ListItemButton onClick={() => navigate("/")}>
             <ListItemIcon sx={{ color: "#80d8ff" }}>
               <Logout />
@@ -255,12 +273,14 @@ export default function ApprenticeDashboard() {
         </Box>
       </Drawer>
 
-      {/* ======= GREETING ======= */}
-      <Box sx={{ px: 4, pt: 2 }}>
+      {/* ================= GREETING ================= */}
+      <Box sx={{ px: { xs: 2, sm: 4 }, pt: 2 }}>
         <Breadcrumbs separator="›">{breadcrumbs}</Breadcrumbs>
-        <Typography variant="h5" fontWeight={700} mt={2}>
+
+        <Typography variant={isMobile ? "h6" : "h5"} fontWeight={700} mt={1}>
           {`${greeting}, ${user?.name || "Apprentice"}`} 👋
         </Typography>
+
         <Typography variant="body2" sx={{ opacity: 0.7 }}>
           {new Date().toLocaleDateString("en-US", {
             weekday: "long",
@@ -271,10 +291,10 @@ export default function ApprenticeDashboard() {
         </Typography>
       </Box>
 
-      {/* ======= KPI CARDS ======= */}
-      <Box sx={{ p: 4 }}>
+      {/* ================= KPI CARDS ================= */}
+      <Box sx={{ px: { xs: 2, sm: 4 }, py: 3 }}>
         {loading ? (
-          <Box sx={{ textAlign: "center", mt: 8 }}>
+          <Box sx={{ textAlign: "center", mt: 6 }}>
             <CircularProgress color="info" />
           </Box>
         ) : (
@@ -287,9 +307,12 @@ export default function ApprenticeDashboard() {
                       background: card.gradient,
                       borderRadius: 3,
                       color: "#fff",
+                      height: "100%",
                       boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
-                      transition: "transform 0.3s ease",
-                      "&:hover": { transform: "translateY(-6px)" },
+                      "&:hover": {
+                        transform: "translateY(-6px)",
+                        transition: "0.3s",
+                      },
                     }}
                   >
                     <CardContent>
@@ -299,19 +322,19 @@ export default function ApprenticeDashboard() {
                           {card.title}
                         </Typography>
                       </Box>
-                      <Typography variant="h3" fontWeight={800} color="#80d8ff" mt={1}>
-                        {card.value || 0}
-                      </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.85, mb: 2 }}>
+
+                      <Typography variant="body2" sx={{ opacity: 0.85, mt: 1 }}>
                         {card.desc}
                       </Typography>
+
                       <Button
                         variant="contained"
+                        fullWidth={isMobile}
                         sx={{
+                          mt: 2,
                           backgroundColor: "#80d8ff",
                           color: "#001a33",
                           fontWeight: 700,
-                          "&:hover": { backgroundColor: "#99e1ff" },
                         }}
                         onClick={() => navigate(card.link)}
                       >
@@ -326,28 +349,31 @@ export default function ApprenticeDashboard() {
         )}
       </Box>
 
-      {/* ======= TRAINING & MENTORSHIP ======= */}
+      {/* ================= TRAINING & MENTORSHIP ================= */}
       {summary && (
-        <Box sx={{ px: 4, mb: 2 }}>
+        <Box sx={{ px: { xs: 2, sm: 4 }, pb: 3 }}>
           <Typography variant="h6" fontWeight={700} color="#80d8ff" mb={1}>
             🎓 Training & Mentorship Progress
           </Typography>
+
           <Box
             sx={{
               background: "linear-gradient(90deg, #002b55, #003f7f)",
               borderRadius: 3,
-              p: 3,
+              p: { xs: 2, sm: 3 },
               boxShadow: "0 3px 10px rgba(0,0,0,0.4)",
             }}
           >
             <Typography variant="body1" fontWeight={600}>
               Mentor: <span style={{ color: "#80d8ff" }}>{summary.mentor}</span>
             </Typography>
+
             {summary.modules.map((m, i) => (
               <Box key={i} sx={{ mt: 2 }}>
                 <Typography variant="body2" fontWeight={600}>
                   {m.name}
                 </Typography>
+
                 <LinearProgress
                   variant="determinate"
                   value={m.progress}
@@ -355,11 +381,14 @@ export default function ApprenticeDashboard() {
                     height: 8,
                     borderRadius: 2,
                     backgroundColor: "#001a33",
-                    "& .MuiLinearProgress-bar": { backgroundColor: "#80d8ff" },
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#80d8ff",
+                    },
                   }}
                 />
               </Box>
             ))}
+
             <Chip
               icon={<WorkspacePremium />}
               label={`Overall Progress: ${summary.progress}%`}
@@ -374,16 +403,16 @@ export default function ApprenticeDashboard() {
         </Box>
       )}
 
-      {/* ======= FOOTER ======= */}
+      {/* ================= FOOTER ================= */}
       <Box
         sx={{
           textAlign: "center",
           py: 2,
           mt: 3,
-          borderTop: "1px solid #003366",
           background: "#002244",
-          fontSize: 14,
           color: "#80d8ff",
+          fontSize: { xs: 12, sm: 14 },
+          borderTop: "1px solid #003366",
         }}
       >
         © {new Date().getFullYear()} SFV Tech. Empowering Growth through Learning.

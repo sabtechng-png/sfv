@@ -1,6 +1,5 @@
 // ============================================================
-// SFV Tech | Engineer Dashboard (Blue-Gold Theme v3)
-// Redesigned to match Storekeeper layout without losing features
+// SFV Tech | Engineer Dashboard (Blue-Gold Theme v3 Responsive)
 // ============================================================
 
 import React, { useState, useEffect } from "react";
@@ -25,7 +24,9 @@ import {
   Breadcrumbs,
   Grow,
   CircularProgress,
+  useMediaQuery,
 } from "@mui/material";
+
 import {
   Dashboard,
   Engineering,
@@ -39,6 +40,7 @@ import {
   Refresh,
   WarningAmber,
 } from "@mui/icons-material";
+
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import { useAuth } from "../context/AuthContext";
 import { useSnackbar } from "notistack";
@@ -52,6 +54,9 @@ export default function EngineerDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isMobile = useMediaQuery("(max-width:600px)");
+  const isTablet = useMediaQuery("(max-width:900px)");
+
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -61,12 +66,13 @@ export default function EngineerDashboard() {
   const [greeting, setGreeting] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // Greeting
   useEffect(() => {
     const hr = new Date().getHours();
     setGreeting(hr < 12 ? "Good Morning" : hr < 18 ? "Good Afternoon" : "Good Evening");
   }, []);
 
-  // === Fetch Summary ===
+  // Fetch summary
   const fetchSummary = async () => {
     try {
       if (!user?.email) return;
@@ -74,8 +80,7 @@ export default function EngineerDashboard() {
       setSummary(res.data);
       setUnreadMessages(res.data.recentExpenses?.length || 2);
       setNotifications(3);
-    } catch (err) {
-      //enqueueSnackbar("Failed to load dashboard data", { variant: "error" });
+    } catch {
       setSummary({
         totalImprest: 0,
         totalExpenses: 0,
@@ -93,7 +98,7 @@ export default function EngineerDashboard() {
     return () => clearInterval(interval);
   }, [user?.email]);
 
-  // === Witness Count ===
+  // Witness
   useEffect(() => {
     const fetchWitness = async () => {
       try {
@@ -108,13 +113,11 @@ export default function EngineerDashboard() {
     return () => clearInterval(timer);
   }, [user?.email]);
 
-  // === Material Request Stats ===
+  // Inventory request stats
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await api.get(`/api/inventory/request-stats/${user.email}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const res = await api.get(`/api/inventory/request-stats/${user.email}`);
         setRequestStats({
           total: res.data.total || 0,
           pending: res.data.pending || 0,
@@ -128,7 +131,6 @@ export default function EngineerDashboard() {
     return () => clearInterval(interval);
   }, [user?.email]);
 
-  // === Breadcrumbs ===
   const breadcrumbs = location.pathname
     .split("/")
     .filter(Boolean)
@@ -136,14 +138,13 @@ export default function EngineerDashboard() {
       <Typography
         key={i}
         color={i === arr.length - 1 ? "#f5c400" : "#fff"}
-        sx={{ cursor: "pointer", textTransform: "capitalize" }}
+        sx={{ cursor: "pointer", textTransform: "capitalize", fontSize: isMobile ? 12 : 14 }}
         onClick={() => navigate("/" + arr.slice(0, i + 1).join("/"))}
       >
         {seg}
       </Typography>
     ));
 
-  // === Sidebar Menu Items ===
   const menuItems = [
     { text: "Dashboard", icon: <Dashboard />, path: "/engineer/dashboard" },
     { text: "Work Management", icon: <Engineering />, path: "/jobs" },
@@ -154,12 +155,10 @@ export default function EngineerDashboard() {
     { text: "Reports", icon: <BarChart />, path: "/engineer/reports" },
   ];
 
-  // === KPI Cards ===
   const cards = summary
     ? [
         {
           title: "Work Management",
-
           desc: "Track and assign engineering tasks.",
           gradient: "linear-gradient(135deg, #0b1a33, #014f86)",
           icon: <Engineering sx={{ fontSize: 40, color: "#f5c400" }} />,
@@ -167,14 +166,13 @@ export default function EngineerDashboard() {
         },
         {
           title: "My Requests",
-         
           desc: "Pending / Total material requests.",
           gradient: "linear-gradient(135deg, #013a63, #0077b6)",
           icon: <BuildCircle sx={{ fontSize: 40, color: "#f5c400" }} />,
           link: "/engineer/myrequests",
         },
         {
-          title: "Expenses Management",
+          title: "Expenses",
           desc: "Manage project or on-site expenses.",
           gradient: "linear-gradient(135deg, #005f73, #0a9396)",
           icon: <AccountBalanceWallet sx={{ fontSize: 40, color: "#f5c400" }} />,
@@ -182,26 +180,21 @@ export default function EngineerDashboard() {
         },
         {
           title: "Quotation System",
-       
           desc: "Prepare quotations for clients or jobs.",
           gradient: "linear-gradient(135deg, #5f0f40, #9a031e)",
           icon: <Description sx={{ fontSize: 40, color: "#f5c400" }} />,
           link: "/engineer/quotations",
         },
-   
         {
           title: "Auditor Page",
-
-          desc: "Restricted section — admin required.",
+          desc: "Restricted section — admin only.",
           gradient: "linear-gradient(135deg, #3c096c, #7b2cbf)",
           icon: <BarChart sx={{ fontSize: 40, color: "#f5c400" }} />,
           link: "/engineer/audit",
         },
-		
-		 {
-          title: "Collection of materials (JK)",
-
-          desc: "Log all your collected material from JK",
+        {
+          title: "Collected Materials (JK)",
+          desc: "Log all materials collected from JK.",
           gradient: "linear-gradient(135deg, #3c096c, #7b2cbf)",
           icon: <BarChart sx={{ fontSize: 40, color: "#f5c400" }} />,
           link: "/engineer/collections",
@@ -211,7 +204,7 @@ export default function EngineerDashboard() {
 
   return (
     <Box sx={{ minHeight: "100vh", background: "#001f3f", color: "#fff" }}>
-      {/* ======= TOP BAR ======= */}
+      {/* TOP BAR */}
       <Box
         sx={{
           position: "sticky",
@@ -219,26 +212,38 @@ export default function EngineerDashboard() {
           zIndex: 10,
           background: "linear-gradient(90deg, #0b1a33, #014f86)",
           py: 1.5,
-          px: 3,
+          px: { xs: 1.5, sm: 3 },
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.6)",
+          flexWrap: "wrap",
+          gap: 1,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: "#f5c400" }}>
             <Dashboard />
           </IconButton>
-          <img src={logo} alt="SFV" style={{ height: 32, borderRadius: 4 }} />
-          <Typography fontWeight={700} variant="h6" color="#f5c400">
-            SFV Engineer Portal
-          </Typography>
+
+          <img
+            src={logo}
+            alt="SFV"
+            style={{
+              height: isMobile ? 26 : 32,
+              borderRadius: 4,
+            }}
+          />
+
+          {!isMobile && (
+            <Typography fontWeight={700} variant="h6" color="#f5c400">
+              SFV Engineer Portal
+            </Typography>
+          )}
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: isMobile ? 0 : 2 }}>
           <Tooltip title="Messages">
-            <IconButton sx={{ color: "#f5c400" }}>
+            <IconButton sx={{ color: "#f5c400", p: isMobile ? 0.5 : 1 }}>
               <Badge badgeContent={unreadMessages} color="error">
                 <Mail />
               </Badge>
@@ -246,7 +251,7 @@ export default function EngineerDashboard() {
           </Tooltip>
 
           <Tooltip title="Notifications">
-            <IconButton sx={{ color: "#f5c400" }}>
+            <IconButton sx={{ color: "#f5c400", p: isMobile ? 0.5 : 1 }}>
               <Badge badgeContent={notifications} color="error">
                 <Notifications />
               </Badge>
@@ -254,25 +259,28 @@ export default function EngineerDashboard() {
           </Tooltip>
 
           <Tooltip title="Refresh">
-            <IconButton sx={{ color: "#f5c400" }} onClick={fetchSummary}>
+            <IconButton sx={{ color: "#f5c400", p: isMobile ? 0.5 : 1 }} onClick={fetchSummary}>
               <Refresh />
             </IconButton>
           </Tooltip>
 
-          <Avatar sx={{ bgcolor: "#f5c400", color: "#0b1a33", fontWeight: 700 }}>
-            {user?.name?.charAt(0) || "E"}
-          </Avatar>
+          {!isMobile && (
+            <Avatar sx={{ bgcolor: "#f5c400", color: "#0b1a33", fontWeight: 700 }}>
+              {user?.name?.charAt(0) || "E"}
+            </Avatar>
+          )}
         </Box>
       </Box>
 
-      {/* ======= SIDE DRAWER ======= */}
+      {/* DRAWER */}
       <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <Box sx={{ width: 250, background: "#0b1a33", height: "100%" }}>
-          <Box sx={{ p: 2, textAlign: "center", borderBottom: "1px solid #1a2b45" }}>
-            <Typography variant="h6" fontWeight={700} color="#f5c400">
+          <Box sx={{ p: 2, textAlign: "center" }}>
+            <Typography fontWeight={700} color="#f5c400">
               Engineer Menu
             </Typography>
           </Box>
+
           <List>
             {menuItems.map((item) => (
               <ListItem disablePadding key={item.text}>
@@ -283,7 +291,9 @@ export default function EngineerDashboard() {
               </ListItem>
             ))}
           </List>
+
           <Divider sx={{ borderColor: "#1a2b45" }} />
+
           <ListItemButton
             onClick={() => {
               logout();
@@ -298,12 +308,14 @@ export default function EngineerDashboard() {
         </Box>
       </Drawer>
 
-      {/* ======= BREADCRUMBS + GREETING ======= */}
-      <Box sx={{ px: 4, pt: 2 }}>
+      {/* BREADCRUMBS + GREETING */}
+      <Box sx={{ px: { xs: 2, sm: 4 }, pt: 2 }}>
         <Breadcrumbs separator="›">{breadcrumbs}</Breadcrumbs>
-        <Typography variant="h5" fontWeight={700} mt={2}>
+
+        <Typography variant={isMobile ? "h6" : "h5"} fontWeight={700} mt={1}>
           {`${greeting}, ${user?.name || "Engineer"}`} 👋
         </Typography>
+
         <Typography variant="body2" sx={{ opacity: 0.7 }}>
           {new Date().toLocaleDateString("en-US", {
             weekday: "long",
@@ -314,10 +326,10 @@ export default function EngineerDashboard() {
         </Typography>
       </Box>
 
-      {/* ======= KPI CARDS ======= */}
-      <Box sx={{ p: 4 }}>
+      {/* KPI CARDS */}
+      <Box sx={{ px: { xs: 2, sm: 4 }, py: 3 }}>
         {loading ? (
-          <Box sx={{ textAlign: "center", mt: 8 }}>
+          <Box sx={{ textAlign: "center", mt: 6 }}>
             <CircularProgress color="warning" />
           </Box>
         ) : (
@@ -330,34 +342,32 @@ export default function EngineerDashboard() {
                       background: card.gradient,
                       borderRadius: 3,
                       color: "#fff",
-                      boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
-                      transition: "transform 0.3s ease",
+                      height: "100%",
+                      boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
                       "&:hover": {
                         transform: "translateY(-6px)",
-                        boxShadow: "0 12px 25px rgba(0,0,0,0.6)",
+                        transition: "0.3s",
                       },
                     }}
                   >
                     <CardContent>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                         {card.icon}
-                        <Typography variant="h6" fontWeight={700}>
-                          {card.title}
-                        </Typography>
+                        <Typography fontWeight={700}>{card.title}</Typography>
                       </Box>
-                      <Typography variant="h3" fontWeight={800} color="#f5c400" mt={1}>
-                        {card.value || 0}
-                      </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.85, mb: 2 }}>
+
+                      <Typography variant="body2" sx={{ opacity: 0.85, mt: 1 }}>
                         {card.desc}
                       </Typography>
+
                       <Button
+                        fullWidth={isMobile}
                         variant="contained"
                         sx={{
+                          mt: 2,
                           backgroundColor: "#f5c400",
                           color: "#0b1a33",
                           fontWeight: 700,
-                          "&:hover": { backgroundColor: "#ffd633" },
                         }}
                         onClick={() => navigate(card.link)}
                       >
@@ -372,36 +382,38 @@ export default function EngineerDashboard() {
         )}
       </Box>
 
-      {/* ======= STATUS WIDGET ======= */}
-      <Box sx={{ px: 4, mt: 1 }}>
+      {/* STATUS WIDGET */}
+      <Box sx={{ px: { xs: 2, sm: 4 }, mt: 2 }}>
         <Typography variant="h6" fontWeight={700} mb={1} color="#f5c400">
           🕓 Pending Witness & Requests
         </Typography>
+
         <Box
           sx={{
             background: "linear-gradient(90deg, #0b1a33, #014f86)",
             borderRadius: 3,
-            p: 2,
+            p: { xs: 2, sm: 3 },
             boxShadow: "0 3px 10px rgba(0,0,0,0.4)",
           }}
         >
           {pendingWitnessCount === 0 && requestStats.pending === 0 ? (
-            <Typography variant="body2" color="#f5c400" textAlign="center">
-              ✅ No pending witness or material request.
+            <Typography textAlign="center" color="#f5c400">
+              ✅ No pending witness or material requests.
             </Typography>
           ) : (
             <>
               {pendingWitnessCount > 0 && (
                 <Box
                   sx={{
+                    mb: 1,
+                    p: 2,
+                    borderRadius: 2,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    py: 1,
-                    px: 2,
-                    mb: 1,
-                    borderRadius: 2,
                     background: "rgba(245,196,0,0.15)",
+                    flexDirection: isMobile ? "column" : "row",
+                    textAlign: isMobile ? "center" : "left",
                   }}
                 >
                   <Typography fontWeight={600}>Witness Approvals</Typography>
@@ -411,17 +423,19 @@ export default function EngineerDashboard() {
                   </Box>
                 </Box>
               )}
+
               {requestStats.pending > 0 && (
                 <Box
                   sx={{
+                    mb: 1,
+                    p: 2,
+                    borderRadius: 2,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    py: 1,
-                    px: 2,
-                    mb: 1,
-                    borderRadius: 2,
+                    flexDirection: isMobile ? "column" : "row",
                     background: "rgba(0,119,182,0.2)",
+                    textAlign: isMobile ? "center" : "left",
                   }}
                 >
                   <Typography fontWeight={600}>Material Requests</Typography>
@@ -435,39 +449,38 @@ export default function EngineerDashboard() {
               )}
             </>
           )}
+
           <Button
-            size="small"
             variant="contained"
             sx={{
-              mt: 1,
+              mt: 2,
               backgroundColor: "#f5c400",
               color: "#0b1a33",
               fontWeight: 700,
-              "&:hover": { backgroundColor: "#ffd633" },
             }}
             onClick={() => navigate("/engineer/witness")}
+            fullWidth={isMobile}
           >
             View Details
           </Button>
         </Box>
       </Box>
 
-      {/* ======= FOOTER ======= */}
+      {/* FOOTER */}
       <Box
         sx={{
           textAlign: "center",
           py: 2,
           mt: 4,
-          borderTop: "1px solid #014f86",
           background: "#0b1a33",
-          fontSize: 14,
           color: "#f5c400",
+          fontSize: { xs: 12, sm: 14 },
         }}
       >
         © {new Date().getFullYear()} SFV Tech. All Rights Reserved.
         <br />
         <Typography variant="caption" sx={{ opacity: 0.7 }}>
-          v3.0.0 — Engineer dashboard auto-refresh active
+          v3.0.0 — Fully responsive dashboard
         </Typography>
       </Box>
     </Box>
