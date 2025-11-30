@@ -291,27 +291,32 @@ const CreateQuotationPage = () => {
     try {
       setSaving(true);
 
-      const payload = {
-        customer_name: customerInfo.customer_name,
-        customer_phone: customerInfo.phone,
-        customer_address: customerInfo.address,
-        quote_for: customerInfo.project_type,
-        notes: customerInfo.notes,
-        subtotal,
-        discount_percent: discountPercent,
-        discount_amount: discountAmount,
-        vat_percent: vatPercent,
-        vat_amount: vatAmount,
-        total: grandTotal,
-        items: items.map((it) => ({
-          material_id: it.material_id,
-          material_name: it.name,
-          material_unit: it.unit,
-          quantity: it.qty,
-          unit_price: it.unit_price,
-          is_custom: it.is_custom,
-        })),
-      };
+const payload = {
+  customer_name: customerInfo.customer_name,
+  customer_phone: customerInfo.phone,
+  customer_address: customerInfo.address,
+
+  // IMPORTANT FIX
+  quote_for: customerInfo.project_type,
+  project_title: customerInfo.project_type,  // <- NEW FIX
+
+  notes: customerInfo.notes,
+  subtotal,
+  discount_percent: discountPercent,
+  discount_amount: discountAmount,
+  vat_percent: vatPercent,
+  vat_amount: vatAmount,
+  total: grandTotal,
+  items: items.map((it) => ({
+    material_id: it.material_id,
+    material_name: it.name,
+    material_unit: it.unit,
+    quantity: it.qty,
+    unit_price: it.unit_price,
+    is_custom: it.is_custom,
+  })),
+};
+
 
       const res = await api.post("/api/quotations", payload);
       setSavedQuotationId(res.data.id);
