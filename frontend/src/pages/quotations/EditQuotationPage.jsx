@@ -5,6 +5,8 @@ import AddIcon from "@mui/icons-material/Add";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 
+import { useAuth } from "../../context/AuthContext";
+
 // Reuse your modular components
 import CustomerForm from "../../components/quotations/CustomerForm";
 import MaterialSelectorModal from "../../components/quotations/MaterialSelectorModal";
@@ -18,6 +20,7 @@ const makeLocalId = () => `${Date.now()}_${Math.random().toString(16).slice(2)}`
 const EditQuotationPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+const { user } = useAuth();
 
   // -----------------------------
   // CUSTOMER INFO
@@ -280,8 +283,18 @@ const EditQuotationPage = () => {
 
       await api.put(`/api/quotations/${id}`, payload);
 
-      alert("Quotation updated successfully.");
-      navigate(`/quotations/view/${id}`);
+     alert("Quotation updated successfully.");
+
+if (user?.role === "admin") {
+  navigate(`/admin/quotations/view/${id}`);
+} else if (user?.role === "engineer") {
+  navigate(`/engineer/quotations/view/${id}`);
+} else if (user?.role === "staff") {
+  navigate(`/staff/quotations/view/${id}`);
+} else {
+  navigate(`/quotations/view/${id}`); // fallback
+}
+
     } catch (err) {
       console.error(err);
       alert("Failed to update quotation.");
