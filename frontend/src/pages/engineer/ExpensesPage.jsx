@@ -306,14 +306,7 @@ export default function ExpensesPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ background: theme.cardB, color: "#0b1a33", borderRadius: 3, boxShadow: 3 }}>
-            <CardContent>
-              <Typography variant="subtitle2" sx={{ opacity: 0.75, letterSpacing: 1 }}>TOTAL (USABLE)</Typography>
-              <Typography variant="h4" fontWeight={900}>{fmt(balance.total)}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+
       </Grid>
 
       {/* Search + Filter */}

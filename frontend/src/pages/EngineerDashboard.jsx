@@ -75,7 +75,7 @@ export default function EngineerDashboard() {
       setUnreadMessages(res.data.recentExpenses?.length || 2);
       setNotifications(3);
     } catch (err) {
-      enqueueSnackbar("Failed to load dashboard data", { variant: "error" });
+      //enqueueSnackbar("Failed to load dashboard data", { variant: "error" });
       setSummary({
         totalImprest: 0,
         totalExpenses: 0,
@@ -159,7 +159,7 @@ export default function EngineerDashboard() {
     ? [
         {
           title: "Work Management",
-          value: summary.totalImprest || 0,
+
           desc: "Track and assign engineering tasks.",
           gradient: "linear-gradient(135deg, #0b1a33, #014f86)",
           icon: <Engineering sx={{ fontSize: 40, color: "#f5c400" }} />,
@@ -167,7 +167,7 @@ export default function EngineerDashboard() {
         },
         {
           title: "My Requests",
-          value: `${requestStats.pending} / ${requestStats.total}`,
+         
           desc: "Pending / Total material requests.",
           gradient: "linear-gradient(135deg, #013a63, #0077b6)",
           icon: <BuildCircle sx={{ fontSize: 40, color: "#f5c400" }} />,
@@ -175,7 +175,6 @@ export default function EngineerDashboard() {
         },
         {
           title: "Expenses Management",
-          value: summary.totalExpenses || 0,
           desc: "Manage project or on-site expenses.",
           gradient: "linear-gradient(135deg, #005f73, #0a9396)",
           icon: <AccountBalanceWallet sx={{ fontSize: 40, color: "#f5c400" }} />,
@@ -183,7 +182,7 @@ export default function EngineerDashboard() {
         },
         {
           title: "Quotation System",
-          value: summary.totalSent || 0,
+       
           desc: "Prepare quotations for clients or jobs.",
           gradient: "linear-gradient(135deg, #5f0f40, #9a031e)",
           icon: <Description sx={{ fontSize: 40, color: "#f5c400" }} />,
@@ -192,7 +191,7 @@ export default function EngineerDashboard() {
    
         {
           title: "Auditor Page",
-          value: summary.availableBalance || 0,
+
           desc: "Restricted section — admin required.",
           gradient: "linear-gradient(135deg, #3c096c, #7b2cbf)",
           icon: <BarChart sx={{ fontSize: 40, color: "#f5c400" }} />,
@@ -201,7 +200,7 @@ export default function EngineerDashboard() {
 		
 		 {
           title: "Collection of materials (JK)",
-          value: summary.availableBalance || 0,
+
           desc: "Log all your collected material from JK",
           gradient: "linear-gradient(135deg, #3c096c, #7b2cbf)",
           icon: <BarChart sx={{ fontSize: 40, color: "#f5c400" }} />,

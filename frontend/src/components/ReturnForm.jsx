@@ -54,9 +54,6 @@ export default function ReturnForm({ user, users, balances, onClose, onSaved }) 
     if (!form.amount || Number(form.amount) <= 0)
       return enqueueSnackbar("Enter a valid amount.", { variant: "error" });
 
-    if (Number(form.amount) > available)
-      return enqueueSnackbar(`Insufficient balance: ${fmt(available)}`, { variant: "error" });
-
     const payload = {
       sender_email: user.email,
       receiver_email: form.receiver_email,

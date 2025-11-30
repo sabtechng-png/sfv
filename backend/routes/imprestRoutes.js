@@ -40,4 +40,37 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Update imprest allocation
+router.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { amount, remarks, source } = req.body;
+
+  try {
+    await pool.query(
+      `UPDATE public.imprest
+       SET amount=$1, remarks=$2, source=$3
+       WHERE id=$4`,
+      [amount, remarks, source, id]
+    );
+
+    res.json({ success: true, message: "Imprest updated" });
+  } catch (err) {
+    console.error("❌ Error updating imprest:", err.message);
+    res.status(500).json({ error: "Failed to update imprest" });
+  }
+});
+
+// Delete imprest
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await pool.query(`DELETE FROM public.imprest WHERE id=$1`, [id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("❌ Error deleting imprest:", err.message);
+    res.status(500).json({ error: "Failed to delete imprest" });
+  }
+});
+
 module.exports = router;
