@@ -53,32 +53,36 @@ router.post("/register", async (req, res) => {
  * @desc    Login and return JWT
  * @access  Public
  */
+// POST /api/auth/login - optimized query with SELECT for necessary fields
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const result = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
+    // Use SELECT with necessary fields and ensure email column is indexed
+    const result = await pool.query("SELECT id, name, email, password_hash, role FROM users WHERE email=$1", [email]);
     const user = result.rows[0];
 
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    // Compare password hash
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Update last_login in UTC
+    // Update last login timestamp (make sure this is done efficiently)
     await pool.query("UPDATE users SET last_login = NOW() WHERE id = $1", [user.id]);
 
+    // Generate and return JWT token
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "2d" }
     );
 
-    // Exclude password hash from response
+    // Exclude password hash before sending user details
     delete user.password_hash;
 
     res.json({ token, user });

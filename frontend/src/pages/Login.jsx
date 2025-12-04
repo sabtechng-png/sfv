@@ -1,7 +1,4 @@
-// ===============================================================
-// SFV Tech | Unified Multi-Role Login (Admin / Engineer / Staff / Others)
-// ===============================================================
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Button,
   Container,
@@ -14,9 +11,10 @@ import {
   IconButton,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import api from "../utils/api"; // ✅ Ensure baseURL points to backend (http://localhost:4000)
+import api from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
+import { debounce } from "lodash"; // Ensure lodash is installed
 
 export default function Login() {
   const { login } = useAuth();
@@ -27,6 +25,21 @@ export default function Login() {
   const [error, setError] = useState("");
 
   // ==========================================================
+  // Handle Email Input with Debouncing
+  // ==========================================================
+  const debouncedEmailChange = useCallback(
+    debounce((value) => setEmail(value), 300), // Debounce input by 300ms
+    []
+  );
+
+  const handleEmailChange = (e) => debouncedEmailChange(e.target.value);
+
+  // ==========================================================
+  // Handle Password Input
+  // ==========================================================
+  const handlePasswordChange = (e) => setPassword(e.target.value);
+
+  // ==========================================================
   // Handle Login Submission
   // ==========================================================
   const handleSubmit = async (e) => {
@@ -35,21 +48,15 @@ export default function Login() {
     setLoading(true);
 
     try {
-      console.log("🔹 Sending login request to /api/auth/login...");
       const res = await api.post("/api/auth/login", { email, password });
-      console.log("✅ Login response:", res.data);
-
       const { token, user } = res.data;
 
       if (token && user) {
-        // ✅ AuthContext handles role-based redirect automatically
         login(user, token);
       } else {
-        console.warn("⚠️ Unexpected server response:", res.data);
         setError("Invalid server response. Please try again.");
       }
     } catch (err) {
-      console.error("❌ Login error:", err);
       const msg =
         err.response?.data?.error ||
         err.message ||
@@ -87,7 +94,6 @@ export default function Login() {
           color: "#fff",
         }}
       >
-        {/* ===== Logo + Header ===== */}
         <Box sx={{ mb: 2 }}>
           <img
             src={logo}
@@ -108,7 +114,7 @@ export default function Login() {
           </Typography>
         </Box>
 
-        {/* ===== Login Form ===== */}
+        {/* Login Form */}
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
@@ -118,14 +124,13 @@ export default function Login() {
             margin="dense"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange} // Use debounced input handler
             sx={{
               backgroundColor: "#fff",
               borderRadius: 1,
               input: { color: "#000" },
             }}
           />
-
           <TextField
             fullWidth
             label="Password"
@@ -134,7 +139,7 @@ export default function Login() {
             margin="dense"
             required
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handlePasswordChange}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -155,8 +160,6 @@ export default function Login() {
               input: { color: "#000" },
             }}
           />
-
-          {/* ===== Error Message ===== */}
           {error && (
             <Typography
               color="error"
@@ -167,7 +170,6 @@ export default function Login() {
             </Typography>
           )}
 
-          {/* ===== Submit Button ===== */}
           <Button
             type="submit"
             variant="contained"
@@ -194,7 +196,6 @@ export default function Login() {
           </Button>
         </form>
 
-        {/* ===== Footer ===== */}
         <Typography
           variant="caption"
           sx={{ mt: 3, display: "block", opacity: 0.6 }}
